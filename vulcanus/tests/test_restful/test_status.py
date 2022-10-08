@@ -38,7 +38,7 @@ class TestStatus(unittest.TestCase):
         res= make_response(data)
         expected_res = {
             "code": SUCCEED,
-            "msg": "openration succeed",
+            "msg": "operation succeed",
             "a": 1
         }
         self.assertEqual(res, expected_res)
@@ -47,7 +47,7 @@ class TestStatus(unittest.TestCase):
         res= make_response(data)
         expected_res = {
             "code": SUCCEED,
-            "msg": "openration succeed"
+            "msg": "operation succeed"
         }
         self.assertEqual(res, expected_res)
 

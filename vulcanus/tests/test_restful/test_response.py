@@ -47,7 +47,7 @@ class TestResponse(unittest.TestCase):
         self.assertEqual(res, expected_res)
     
     def test_restful_verify_args(self):
-        with mock.patch("aops_utils.restful.response.validate") as mock_validate:
+        with mock.patch("vulcanus.restful.response.validate") as mock_validate:
             mock_validate.return_value = (1, 2)
             res = MyResponse.verify_args(1, 1)
             self.assertEqual(res, PARAM_ERROR)
