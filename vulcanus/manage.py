@@ -18,7 +18,7 @@ Description:
 from flask import Flask
 
 
-def init_app(name, module="aops"):
+def init_app(name):
     """
     Init application
 
@@ -29,10 +29,8 @@ def init_app(name, module="aops"):
         app
         configuration
     """
-    module_name = '_'.join([module, name])
     app = Flask(name)
-
-    module = __import__(module_name, fromlist=[module_name])
+    module = __import__(name, fromlist=[name])
     for blue, api in module.BLUE_POINT:
         api.init_app(app)
         app.register_blueprint(blue)

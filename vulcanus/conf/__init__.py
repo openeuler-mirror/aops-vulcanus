@@ -19,7 +19,7 @@ import os
 import configparser
 
 from vulcanus.conf import default_config
-from vulcanus.conf.constant import SYSTEM_CONFIG_PATH, MANAGER_CONFIG_PATH
+from vulcanus.conf.constant import SYSTEM_CONFIG_PATH
 
 
 class Config:
@@ -82,4 +82,3 @@ class Config:
 
 
 configuration = Config(SYSTEM_CONFIG_PATH, default_config)
-proxy_configuration = Config(MANAGER_CONFIG_PATH,default_config)

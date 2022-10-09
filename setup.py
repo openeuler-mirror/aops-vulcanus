@@ -5,8 +5,8 @@ Description: setup up the A-ops utils module.
 from setuptools import setup, find_packages
 
 setup(
-    name='aops-utils',
-    version='1.0.0',
+    name='vulcanus',
+    version='2.0.0',
     packages=find_packages(),
     install_requires=[
         'concurrent-log-handler',
@@ -29,7 +29,7 @@ setup(
     data_files=[
         ('/etc/aops', ['conf/system.ini'])
     ],
-    scripts=['aops-utils'],
+    scripts=['aops-vulcanus'],
     zip_safe=False
 )
 
