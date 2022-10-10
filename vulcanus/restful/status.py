@@ -22,6 +22,7 @@ SERVER_ERROR = 500
 PARAM_ERROR = 1000
 HTTP_CONNECT_ERROR = 1001
 UNKNOWN_ERROR = 1002
+SERVICE_NOT_EXIST = 1003
 DATABASE_CONNECT_ERROR = 1101
 DATABASE_INSERT_ERROR = 1102
 DATABASE_DELETE_ERROR = 1103
@@ -126,6 +127,9 @@ class StatusCode:  # pylint: disable=R0903
         },
         SET_AGENT_PLUGIN_STATUS_FAILED: {
             "msg": "Set agent plugin status failed"
+        },
+        SERVICE_NOT_EXIST: {
+            "msg": "the service is not found"
         }
     }
 
