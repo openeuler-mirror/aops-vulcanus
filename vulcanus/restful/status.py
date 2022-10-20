@@ -23,6 +23,7 @@ PARAM_ERROR = 1000
 HTTP_CONNECT_ERROR = 1001
 UNKNOWN_ERROR = 1002
 SERVICE_NOT_EXIST = 1003
+WRONG_FILE_FORMAT = 1004
 DATABASE_CONNECT_ERROR = 1101
 DATABASE_INSERT_ERROR = 1102
 DATABASE_DELETE_ERROR = 1103
@@ -58,6 +59,9 @@ class StatusCode:  # pylint: disable=R0903
         },
         UNKNOWN_ERROR: {
             "msg": "unknown error"
+        },
+        WRONG_FILE_FORMAT: {
+            "msg": "wrong file format"
         },
         HTTP_CONNECT_ERROR: {
             "msg": "restful connection error"
