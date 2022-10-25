@@ -15,10 +15,13 @@ Time:
 Author:
 Description: response function
 """
+import os
 import json
+import uuid
 import requests
 from flask import request, jsonify
 from flask_restful import Resource
+from werkzeug.utils import secure_filename
 
 from vulcanus.log.log import LOGGER
 from vulcanus.restful.serialize.validate import validate
@@ -379,6 +382,44 @@ class BaseResponse(Resource):
             verify_res = cls.verify_token(access_token, args)
 
         return args, verify_res
+
+    @classmethod
+    def verify_upload_request(cls, save_path, file_key='file'):
+        """
+        verify upload request's token, save file into save_path/username
+        Args:
+            save_path (str): path the file to be saved
+            file_key (str): body key for the file
+
+        Returns:
+            int: verify status code
+            str: user name
+            str: file's name
+        """
+        args = request.get_json()
+        LOGGER.debug(request.base_url)
+        LOGGER.debug("Interface %s received args: %s", request.endpoint, args)
+
+        access_token = request.headers.get('access_token')
+        if args is None:
+            args = {}
+        verify_res = cls.verify_token(access_token, args)
+
+        file_name = ""
+        username = ""
+        if verify_res == SUCCEED:
+            file = request.files.get(file_key)
+            if file is None or not file.filename:
+                return PARAM_ERROR, "", file_name
+
+            username = args["username"]
+            filename = secure_filename(file.filename)
+            file_name = str(uuid.uuid4()) + '.' + filename.rsplit('.', 1)[1]
+
+            if not os.path.exists(os.path.join(save_path, username)):
+                os.mkdir(os.path.join(save_path, username))
+            file.save(os.path.join(save_path, username, file_name))
+        return verify_res, username, file_name
 
     def handle_request(self, schema, obj, func='_handle', need_token=True, debug=True):
         """
