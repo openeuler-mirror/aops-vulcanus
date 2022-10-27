@@ -52,15 +52,6 @@ ADD_GROUP = "/manage/host/group/add"
 DELETE_GROUP = "/manage/host/group/delete"
 GET_GROUP = "/manage/host/group/get"
 
-IMPORT_TEMPLATE = "/manage/template/import"
-DELETE_TEMPLATE = "/manage/template/delete"
-GET_TEMPLATE = "/manage/template/get"
-
-EXECUTE_TASK = "/manage/task/execute"
-DELETE_TASK = "/manage/task/delete"
-GENERATE_TASK = "/manage/task/generate"
-GET_TASK = "/manage/task/get"
-
 COLLECT_CONFIG = '/manage/config/collect'
 
 USER_LOGIN = "/manage/account/login"
