@@ -63,6 +63,10 @@ AGENT_PLUGIN_INFO = '/manage/agent/plugin/info'
 AGENT_PLUGIN_SET = '/manage/agent/plugin/set'
 AGENT_METRIC_SET = '/manage/agent/metric/set'
 
+EXECUTE_REPO_SET = '/manage/vulnerability/repo/set'
+EXECUTE_CVE_FIX = '/manage/vulnerability/cve/fix'
+EXECUTE_CVE_SCAN = '/manage/vulnerability/cve/scan'
+
 # database route
 DATA_ADD_HOST = "/data/host/add"
 DATA_DELETE_HOST = "/data/host/delete"
