@@ -25,6 +25,7 @@ UNKNOWN_ERROR = 1002
 SERVICE_NOT_EXIST = 1003
 WRONG_FILE_FORMAT = 1004
 REPO_CONTENT_INCORRECT = 1010
+REPO_NOT_SET = 1011
 DATABASE_CONNECT_ERROR = 1101
 DATABASE_INSERT_ERROR = 1102
 DATABASE_DELETE_ERROR = 1103
@@ -135,6 +136,9 @@ class StatusCode:  # pylint: disable=R0903
         },
         SERVICE_NOT_EXIST: {
             "msg": "the service is not found"
+        },
+        REPO_NOT_SET: {
+            "msg": "repo source is not set"
         }
     }
 
