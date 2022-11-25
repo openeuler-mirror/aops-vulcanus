@@ -417,7 +417,8 @@ class BaseResponse(Resource):
             file_name = str(uuid.uuid4()) + '.' + filename.rsplit('.', 1)[1]
 
             if not os.path.exists(os.path.join(save_path, username)):
-                os.mkdir(os.path.join(save_path, username))
+                os.makedirs(os.path.join(save_path, username))
+
             file.save(os.path.join(save_path, username, file_name))
         return verify_res, username, file_name
 
