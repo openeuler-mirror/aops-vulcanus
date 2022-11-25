@@ -26,7 +26,7 @@ from werkzeug.utils import secure_filename
 from vulcanus.log.log import LOGGER
 from vulcanus.restful.serialize.validate import validate
 from vulcanus.restful.status import HTTP_CONNECT_ERROR, PARAM_ERROR,\
-    StatusCode, SERVER_ERROR, SUCCEED, TOKEN_ERROR, make_response, WRONG_FILE_FORMAT
+    StatusCode, SERVER_ERROR, SUCCEED, TOKEN_ERROR, make_response
 from vulcanus.database.helper import operate
 
 
@@ -414,9 +414,7 @@ class BaseResponse(Resource):
 
             username = args["username"]
             filename = secure_filename(file.filename)
-            if len(filename.split(".")) < 2:
-                return WRONG_FILE_FORMAT, "", file_name
-            file_name = str(uuid.uuid4()) + '.' + filename.rsplit('.', 1)[1]
+            file_name = str(uuid.uuid4()) + '.' + filename.rsplit('.', 1)[-1]
 
             if not os.path.exists(os.path.join(save_path, username)):
                 os.makedirs(os.path.join(save_path, username))
