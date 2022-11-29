@@ -57,7 +57,7 @@ class Host(Base, MyBase):  # pylint: disable=R0903
     last_scan = Column(Integer)
     scene = Column(String(255))
     agent_port = Column(Integer)
-    os_version = Column(String(20))
+    os_version = Column(String(40))
 
     user = Column(String(40), ForeignKey('user.username'))
     host_group_id = Column(Integer, ForeignKey('host_group.host_group_id'))
