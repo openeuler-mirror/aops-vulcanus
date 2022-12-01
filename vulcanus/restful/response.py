@@ -65,7 +65,7 @@ class MyResponse:
                 result = StatusCode.make_response(SERVER_ERROR)
             else:
                 result = json.loads(response.text)
-        except requests.exceptions.ConnectionError as error:
+        except requests.exceptions.RequestException as error:
             LOGGER.error(error)
             result = StatusCode.make_response(HTTP_CONNECT_ERROR)
 
@@ -242,7 +242,7 @@ class BaseResponse(Resource):
                 result = StatusCode.make_response(SERVER_ERROR)
             else:
                 result = json.loads(response.text)
-        except requests.exceptions.ConnectionError as error:
+        except requests.exceptions.RequestException as error:
             LOGGER.error(error)
             result = StatusCode.make_response(HTTP_CONNECT_ERROR)
 
