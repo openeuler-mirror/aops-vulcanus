@@ -119,7 +119,7 @@ function check_es_installed() {
   if [ -z "${es_ip}" ] || [ -z "${es_port}" ]; then
     echo "[ERROR] can not find config name 'ip' or 'port' of elasticsearch in: ${CONFIG_FILE}, please check the file"
     echo "If you have installed ES, Please set correct 'ip' value and 'port' of elasticsearch value and re-execute '${DATABASE_CONSTANT} start' "
-    echo "If you have not installed ES, please execute the automatic installation script '/usr/bin/aops-basedatabase elasticsearch' under the root user "
+    echo "If you have not installed ES, please execute the automatic installation script '/opt/aops/script/sops-basedatabase elasticsearch' under the root user "
     exit 1
   fi
   check_num "${es_port}" "es_port"
@@ -128,7 +128,7 @@ function check_es_installed() {
   if [ -z "${visit_es_response}" ]; then
     echo "========================================================================="
     echo "[ERROR] elasticsearch connection FAILED,the following reason may cause failed:"
-    echo "[INFO] 1. You have not installed Elasticsearch, if you need to install, please execute the automatic installation script '/usr/bin/aops-basedatabase' under the root user"
+    echo "[INFO] 1. You have not installed Elasticsearch, if you need to install, please execute the automatic installation script '/opt/aops/script/sops-basedatabase' under the root user"
     echo "[INFO] 2. Elasticsearch configuration is incorrect, please update value of 'ip' and 'port' of elasticsearch in $CONFIG_FILE"
     echo "[INFO] 3. Elasticsearch service not started, please start elasticsearch service."
     exit 1
@@ -146,7 +146,7 @@ function check_mysql_installed() {
   if [ -z "${mysql_ip}" ] || [ -z "${port}" ]; then
     echo "[ERROR] can not find config name 'ip' or 'port' of mysql in: ${CONFIG_FILE}, please check the file"
     echo "If you have installed mysql, please set correct 'ip' value and 'port' value of mysql and re-execute '${DATABASE_CONSTANT} start' "
-    echo "If you have not installed mysql, please execute the automatic installation script '/usr/bin/aops-basedatabase mysql' under the root user "
+    echo "If you have not installed mysql, please execute the automatic installation script '/opt/aops/script/sops-basedatabase mysql' under the root user "
     exit 1
   fi
   check_num "${port}" "port"
@@ -156,7 +156,7 @@ function check_mysql_installed() {
   if [ -n "${create_aops_database}" ]; then
     echo "========================================================================="
     echo "[ERROR] mysql connection FAILED, the following reason may cause failed:"
-    echo "[INFO] 1. You have not installed mysql,If you need to install, please execute the automatic installation script '/usr/bin/aops-basedatabase' under the root user"
+    echo "[INFO] 1. You have not installed mysql,If you need to install, please execute the automatic installation script '/opt/aops/script/sops-basedatabase' under the root user"
     echo "[INFO] 2. mysql configuration is incorrect,please update value of 'ip' and 'port' of mysql in ${CONFIG_FILE}"
     echo "[INFO] 3. mysql service not started,please start mysql service."
     exit 1
