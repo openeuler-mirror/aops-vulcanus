@@ -25,7 +25,7 @@ from werkzeug.utils import secure_filename
 
 from vulcanus.log.log import LOGGER
 from vulcanus.restful.serialize.validate import validate
-from vulcanus.restful.status import HTTP_CONNECT_ERROR, PARAM_ERROR,\
+from vulcanus.restful.status import HTTP_CONNECT_ERROR, PARAM_ERROR, \
     StatusCode, SERVER_ERROR, SUCCEED, TOKEN_ERROR, make_response
 from vulcanus.database.helper import operate
 
@@ -35,7 +35,7 @@ class MyResponse:
     response function
     """
     @classmethod
-    def get_response(cls, method, url, data, header=None):
+    def get_response(cls, method, url, data, header=None, timeout=600):
         """
         send a request and get the response
 
@@ -44,6 +44,7 @@ class MyResponse:
             url(str): requset url
             data(dict): params in body
             header(dict): request header
+            timeout(int): timeout in seconds
 
         Returns:
             dict: response body
@@ -56,10 +57,10 @@ class MyResponse:
         try:
             if header:
                 response = requests.request(
-                    method=method, url=url, json=data, headers=header, timeout=600)
+                    method=method, url=url, json=data, headers=header, timeout=timeout)
             else:
                 response = requests.request(
-                    method=method, url=url, json=data, timeout=600)
+                    method=method, url=url, json=data, timeout=timeout)
             if response.status_code != 200:
                 result = StatusCode.make_response(SERVER_ERROR)
             else:
@@ -211,7 +212,7 @@ class BaseResponse(Resource):
     Restful base class, offer a basic function that can handle the request.
     """
     @classmethod
-    def get_response(cls, method, url, data, header=None):
+    def get_response(cls, method, url, data, header=None, timeout=600):
         """
         send a request and get the response
 
@@ -220,6 +221,7 @@ class BaseResponse(Resource):
             url(str): requset url
             data(dict): params in body
             header(dict): request header
+            timeout(int): timeout in seconds
 
         Returns:
             dict: response body
@@ -232,10 +234,10 @@ class BaseResponse(Resource):
         try:
             if header:
                 response = requests.request(
-                    method=method, url=url, json=data, headers=header, timeout=600)
+                    method=method, url=url, json=data, headers=header, timeout=timeout)
             else:
                 response = requests.request(
-                    method=method, url=url, json=data, timeout=600)
+                    method=method, url=url, json=data, timeout=timeout)
             if response.status_code != 200:
                 result = StatusCode.make_response(SERVER_ERROR)
             else:
