@@ -111,6 +111,20 @@ class User(Base, MyBase):  # pylint: disable=R0903
         return check_password_hash(raw_password, password)
 
 
+class Auth(Base, MyBase):
+    """
+    Auth table
+    """
+    __tablename__ = "auth"
+
+    auth_id = Column(String(32), primary_key=True)
+    auth_account = Column(String(20), nullable=False)
+    email = Column(String(50))
+    nick_name = Column(String(20))
+    auth_type = Column(String(20))
+    username = Column(String(40), ForeignKey('user.username'))
+
+
 def create_utils_tables(base, engine):
     """
     Create basic database tables, e.g. user, host, hostgroup
@@ -121,7 +135,7 @@ def create_utils_tables(base, engine):
         engine (instance): _engine.Engine instance
     """
     # pay attention, the sequence of list is important. Base table need to be listed first.
-    tables = [User, HostGroup, Host]
+    tables = [User, HostGroup, Host, Auth]
     tables_objects = [base.metadata.tables[table.__tablename__]
                       for table in tables]
     create_tables(base, engine, tables=tables_objects)

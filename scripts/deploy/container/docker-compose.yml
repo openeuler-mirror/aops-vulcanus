@@ -1,0 +1,49 @@
+version: '2'
+services:
+  hermes:
+    build:
+      context: ./hermes
+      dockerfile: Dockerfile
+    container_name: hermes
+    ports:
+      - 8080:80
+    depends_on:
+      - diana
+  apollo:
+    build:
+      context: ./aops-apollo
+      dockerfile: Dockerfile
+    depends_on:
+      # - mysql
+      # - elasticsearch
+      - diana
+    container_name: apollo
+    ports:
+      - 11116:11116
+    volumes:
+      - /etc/aops/apollo.ini:/etc/aops/apollo.ini
+  diana:
+    build:
+      context: ./aops-diana
+      dockerfile: Dockerfile
+      # depends_on:
+      # - mysql
+      # - elasticsearch
+      # - prometheus
+    container_name: diana
+    ports:
+      - 11112:11112
+    volumes:
+      - /etc/aops/diana.ini:/etc/aops/diana.ini
+  zeus:
+    build:
+      context: ./aops-zeus
+      dockerfile: Dockerfile
+    ports:
+      - 11111:11111
+    container_name: zeus
+    # depends_on:
+    #   - elasticsearch
+    #   - mysql
+    volumes:
+      - /etc/aops/zeus.ini:/etc/aops/zeus.ini

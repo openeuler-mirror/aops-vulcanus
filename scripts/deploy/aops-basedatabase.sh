@@ -98,7 +98,8 @@ function start_mysql_service() {
   exit 1
 }
 
-function main() {
+
+function install_database() {
   if [ "${INSTALL_SOFTWARE}" = "elasticsearch" ]; then
     check_es_status
     create_es_repo
@@ -108,8 +109,7 @@ function main() {
     download_install_mysql
     start_mysql_service
   else
-    echo "Failed to parse parameters, please use 'bash aops-basedatabase elasticsearch/mysql'"
-    exit 1
+    echo "Failed to parse parameters, please use 'elasticsearch/mysql'"
   fi
 }
-main
+

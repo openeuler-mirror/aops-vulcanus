@@ -60,7 +60,7 @@ deploy_by_ansible() {
 }
 
 
-main(){
+function install_agent_client(){
     install_dependency_pkg
     if [ $? -ne 0 ]; then
       echo "[Error]Install dependency package failed!"
@@ -88,4 +88,3 @@ main(){
     fi
 }
 
-main
