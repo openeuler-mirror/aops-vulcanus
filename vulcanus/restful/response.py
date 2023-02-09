@@ -17,17 +17,20 @@ Description: response function
 """
 import os
 import json
+from datetime import datetime
+import time
 import uuid
 import requests
 from flask import request, jsonify
 from flask_restful import Resource
 from werkzeug.utils import secure_filename
-
+from vulcanus.database.proxy import RedisProxy
 from vulcanus.log.log import LOGGER
 from vulcanus.restful.serialize.validate import validate
-from vulcanus.restful.status import HTTP_CONNECT_ERROR, PARAM_ERROR, \
+from vulcanus.restful.status import HTTP_CONNECT_ERROR, PARAM_ERROR, TOKEN_EXPIRE, \
     StatusCode, SERVER_ERROR, SUCCEED, TOKEN_ERROR, make_response
 from vulcanus.database.helper import operate
+from vulcanus.token import decode_token
 
 
 class MyResponse:
@@ -104,12 +107,25 @@ class MyResponse:
         Returns:
             int: status code
         """
-        # temp
-        if token:
-            args['username'] = "admin"
-            return SUCCEED
+        if not token:
+            return TOKEN_ERROR
 
-        return TOKEN_ERROR
+        cache_token = RedisProxy.redis_connect.get("token_" + token)
+        if not cache_token:
+            return TOKEN_ERROR
+        try:
+            verify_info = decode_token(token)
+        except ValueError:
+            return TOKEN_ERROR
+
+        now_time_span = int(time.mktime(time.strptime(datetime.now().strftime(
+            '%Y-%m-%d %H:%M:%S'), "%Y-%m-%d %H:%M:%S")))
+
+        if int(verify_info['exp']) < now_time_span:
+            return TOKEN_EXPIRE
+
+        args['username'] = verify_info["key"]
+        return SUCCEED
 
     @classmethod
     def verify_all(cls, args, schema, token, load=False):
@@ -322,12 +338,25 @@ class BaseResponse(Resource):
         Returns:
             int: status code
         """
-        # temp
-        if token:
-            args['username'] = "admin"
-            return SUCCEED
+        if not token:
+            return TOKEN_ERROR
 
-        return TOKEN_ERROR
+        cache_token = RedisProxy.redis_connect.get("token_" + token)
+        if not cache_token:
+            return TOKEN_ERROR
+        try:
+            verify_info = decode_token(token)
+        except ValueError:
+            return TOKEN_ERROR
+
+        now_time_span = int(time.mktime(time.strptime(datetime.now().strftime(
+            '%Y-%m-%d %H:%M:%S'), "%Y-%m-%d %H:%M:%S")))
+
+        if int(verify_info['exp']) < now_time_span:
+            return TOKEN_EXPIRE
+
+        args['username'] = verify_info["key"]
+        return SUCCEED
 
     @classmethod
     def verify_all(cls, args, schema, token, load=False):
@@ -371,10 +400,11 @@ class BaseResponse(Resource):
 
         if debug:
             LOGGER.debug(request.base_url)
-            LOGGER.debug("Interface %s received args: %s", request.endpoint, args)
+            LOGGER.debug("Interface %s received args: %s",
+                         request.endpoint, args)
 
         access_token = request.headers.get('access_token')
-
+        verify_res = SUCCEED
         if schema is not None:
             verify_res = cls.verify_args(args, schema)
             if verify_res != SUCCEED:
@@ -438,7 +468,8 @@ class BaseResponse(Resource):
         Returns:
             dict: response body
         """
-        args, status = self.verify_request(schema, need_token=need_token, debug=debug)
+        args, status = self.verify_request(
+            schema, need_token=need_token, debug=debug)
         if status == SUCCEED:
             status = getattr(obj, func)(args)
 

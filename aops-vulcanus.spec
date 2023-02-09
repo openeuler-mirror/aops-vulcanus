@@ -11,6 +11,7 @@ Requires:   python3-concurrent-log-handler python3-xmltodict python3-pyyaml pyth
 Requires:   python3-requests python3-xlrd python3-prettytable python3-pygments python3-sqlalchemy
 Requires:   python3-elasticsearch >= 7 python3-prometheus-api-client python3-urllib3 python3-werkzeug
 Requires:   python3-flask python3-flask-restful python3-PyMySQL python3-kafka-python
+Requires:   python-jwt python-redis
 Provides:   aops-vulcanus
 Conflicts:  aops-utils
 

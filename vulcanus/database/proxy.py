@@ -23,7 +23,7 @@ import sqlalchemy
 from elasticsearch import Elasticsearch, ElasticsearchException, helpers, TransportError, \
     NotFoundError
 from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
-
+from redis import Redis, ConnectionPool
 from vulcanus.log.log import LOGGER
 
 
@@ -614,3 +614,38 @@ class PromDbProxy(DataBaseProxy):
 
         combined_condition = '{' + ",".join(condition_list) + '}'
         return combined_condition
+
+
+class RedisProxy(DataBaseProxy):
+    """
+    Proxy of redis database
+    """
+    redis_connect = None
+
+    def __init__(self, configuration, host=None, port=None):
+        """
+        Init redis database proxy
+
+        Args:
+            configuration (Config)
+            host (str)
+            port (int)
+        """
+        DataBaseProxy.__init__(self)
+        self._host = host or configuration.redis.get('IP')
+        self._port = port or configuration.redis.get('PORT')
+
+    def connect(self):
+        """
+        Make a connect to database connection pool
+        """
+        RedisProxy.redis_connect = Redis(connection_pool=ConnectionPool(
+            host=self._host,
+            port=self._port,
+            decode_responses=True))
+
+    def close(self):
+        """
+        proxy should implement close function
+        """
+        RedisProxy.redis_connect.close()

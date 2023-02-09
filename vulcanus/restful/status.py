@@ -42,10 +42,16 @@ KEY_ERROR = 1203
 CHANGE_PASSWORD = 1204
 REPEAT_PASSWORD = 1205
 CHANGE_PASSWORD_FAIL = 1206
+TOKEN_EXPIRE = 1207
 TASK_EXECUTION_FAIL = 1301
 REPEAT_TASK_EXECUTION = 1302
 SET_AGENT_PLUGIN_STATUS_FAILED = 1401
 WORKFLOW_ASSIGN_MODEL_FAIL = 1501
+AUTH_ERROR = 1601
+AUTH_USERINFO_SYNC_ERROR = 1602
+NO_BOUND = 1603
+GENERATION_TOKEN_ERROR = 1604
+REPEAT_BIND = 1605
 
 
 class StatusCode:  # pylint: disable=R0903
@@ -104,6 +110,9 @@ class StatusCode:  # pylint: disable=R0903
         REPEAT_LOGIN: {
             "msg": "user has logined, repeat login"
         },
+        TOKEN_EXPIRE: {
+            "msg": "token expired"
+        },
         KEY_ERROR: {
             "msg": "missing or invalid vault password, please certificate the vault password"
         },
@@ -139,6 +148,21 @@ class StatusCode:  # pylint: disable=R0903
         },
         REPO_NOT_SET: {
             "msg": "repo source is not set"
+        },
+        AUTH_ERROR: {
+            "msg": "authentication failed"
+        },
+        AUTH_USERINFO_SYNC_ERROR: {
+            "msg": "authentication user information is incorrectly synchronized"
+        },
+        NO_BOUND: {
+            "msg": "not bind a local account"
+        },
+        GENERATION_TOKEN_ERROR: {
+            "msg": "Token generation failed"
+        },
+        REPEAT_BIND: {
+            "msg": "Bind the same user repeatedly"
         }
     }
 
