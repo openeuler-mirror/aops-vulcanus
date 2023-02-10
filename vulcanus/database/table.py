@@ -47,17 +47,19 @@ class Host(Base, MyBase):  # pylint: disable=R0903
     """
     __tablename__ = "host"
 
-    host_id = Column(String(40), primary_key=True)
-    host_name = Column(String(20), nullable=False)
-    public_ip = Column(String(16), nullable=False)
-    status = Column(String(20))
+    host_id = Column(Integer(), primary_key=True, autoincrement=True)
+    host_name = Column(String(50), nullable=False)
+    host_ip = Column(String(16), nullable=False)
     management = Column(Boolean, nullable=False)
     host_group_name = Column(String(20))
     repo_name = Column(String(20))
     last_scan = Column(Integer)
     scene = Column(String(255))
-    agent_port = Column(Integer)
     os_version = Column(String(40))
+    ssh_user = Column(String(20), default="root")
+    ssh_port = Column(Integer(), default=22)
+    pkey = Column(String(2048))
+    status = Column(Integer(), default=2)
 
     user = Column(String(40), ForeignKey('user.username'))
     host_group_id = Column(Integer, ForeignKey('host_group.host_group_id'))
@@ -67,7 +69,7 @@ class Host(Base, MyBase):  # pylint: disable=R0903
 
     def __eq__(self, o):
         return self.user == o.user and (self.host_name == o.host_name or
-                                        self.public_ip == o.public_ip)
+                                        self.host_ip == o.host_ip)
 
 
 class HostGroup(Base, MyBase):
