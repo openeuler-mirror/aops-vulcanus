@@ -52,7 +52,7 @@ def generate_token(unique_iden, minutes=20, **kwargs):
     if not unique_iden:
         return ValueError("A unique identifier is missing")
     token_body = {
-        "iat": time.time(),
+        "iat": int(time.time()),
         "exp": get_timedelta(20),
     }
     if minutes and minutes != 20:
