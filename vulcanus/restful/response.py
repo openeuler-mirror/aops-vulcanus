@@ -109,13 +109,14 @@ class MyResponse:
         """
         if not token:
             return TOKEN_ERROR
-
-        cache_token = RedisProxy.redis_connect.get("token_" + token)
-        if not cache_token:
-            return TOKEN_ERROR
         try:
             verify_info = decode_token(token)
         except ValueError:
+            return TOKEN_ERROR
+
+        cache_token = RedisProxy.redis_connect.get(
+            "token_" + verify_info["key"])
+        if not cache_token:
             return TOKEN_ERROR
 
         now_time_span = int(time.mktime(time.strptime(datetime.now().strftime(
@@ -341,12 +342,14 @@ class BaseResponse(Resource):
         if not token:
             return TOKEN_ERROR
 
-        cache_token = RedisProxy.redis_connect.get("token_" + token)
-        if not cache_token:
-            return TOKEN_ERROR
         try:
             verify_info = decode_token(token)
         except ValueError:
+            return TOKEN_ERROR
+
+        cache_token = RedisProxy.redis_connect.get(
+            "token_" + verify_info["key"])
+        if not cache_token:
             return TOKEN_ERROR
 
         now_time_span = int(time.mktime(time.strptime(datetime.now().strftime(
