@@ -52,6 +52,9 @@ AUTH_USERINFO_SYNC_ERROR = 1602
 NO_BOUND = 1603
 GENERATION_TOKEN_ERROR = 1604
 REPEAT_BIND = 1605
+SSH_CONNECTION_ERROR = 1701
+SSH_AUTHENTICATION_ERROR = 1702
+EXECUTE_COMMAND_ERROR = 1703
 
 
 class StatusCode:  # pylint: disable=R0903
@@ -148,6 +151,15 @@ class StatusCode:  # pylint: disable=R0903
         },
         REPO_NOT_SET: {
             "msg": "repo source is not set"
+        },
+        SSH_CONNECTION_ERROR: {
+            "msg": "connection failed, invalid ip address or port"
+        },
+        SSH_AUTHENTICATION_ERROR: {
+            "msg": "authentication failed, invalid username or password!"
+        },
+        EXECUTE_COMMAND_ERROR: {
+            "msg": "ssh execute command error"
         },
         AUTH_ERROR: {
             "msg": "authentication failed"

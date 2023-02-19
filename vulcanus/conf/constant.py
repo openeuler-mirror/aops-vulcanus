@@ -40,7 +40,9 @@ CHECK_RULE_INDEX = "check_rule"
 URL_FORMAT = "http://%s:%s%s"
 
 # manager route
+REGISTER_HOST = "/manage/host/register"
 ADD_HOST = "/manage/host/add"
+ADD_HOST_BATCH = "/manage/host/add/batch"
 DELETE_HOST = "/manage/host/delete"
 QUERY_HOST = "/manage/host/get"
 GET_HOST_COUNT = "/manage/host/count"
