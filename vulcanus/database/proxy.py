@@ -16,6 +16,7 @@ Author:
 Description: Database proxy
 """
 import math
+import redis
 from datetime import datetime
 from abc import ABC, abstractmethod
 from urllib3.exceptions import LocationValueError
@@ -639,10 +640,14 @@ class RedisProxy(DataBaseProxy):
         """
         Make a connect to database connection pool
         """
-        RedisProxy.redis_connect = Redis(connection_pool=ConnectionPool(
-            host=self._host,
-            port=self._port,
-            decode_responses=True))
+        try:
+            RedisProxy.redis_connect = Redis(connection_pool=ConnectionPool(
+                host=self._host,
+                port=self._port,
+                decode_responses=True))
+            RedisProxy.redis_connect.ping()
+        except redis.ConnectionError:
+            raise redis.ConnectionError("Redis service connection error")
 
     def close(self):
         """

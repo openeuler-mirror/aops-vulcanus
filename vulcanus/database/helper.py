@@ -22,7 +22,7 @@ import math
 from sqlalchemy import create_engine
 from sqlalchemy.sql.expression import desc, asc
 
-from vulcanus.restful.status import DATABASE_CONNECT_ERROR, PARTIAL_SUCCEED, SUCCEED
+from vulcanus.restful.resp.state import DATABASE_CONNECT_ERROR, PARTIAL_SUCCEED, SUCCEED
 
 
 def make_mysql_engine_url(configuration):

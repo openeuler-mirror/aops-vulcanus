@@ -20,7 +20,7 @@ import json
 from prettytable import PrettyTable
 from pygments import highlight, lexers, formatters
 
-from vulcanus.restful.response import MyResponse
+from vulcanus.restful.response import BaseResponse
 
 
 def add_page(sub_parse):
@@ -61,7 +61,7 @@ def cli_request(action, manager_url, pyload, header, access_token=None):
     """
     if access_token is not None:
         header['access_token'] = access_token
-    result = MyResponse.get_response(action, manager_url, pyload, header)
+    result = BaseResponse.get_response(action, manager_url, pyload, header)
     print(result)
     return result
 
@@ -81,7 +81,7 @@ def request_without_print(action, manager_url, pyload, header, access_token=None
     """
     if access_token is not None:
         header['access_token'] = access_token
-    result = MyResponse.get_response(action, manager_url, pyload, header)
+    result = BaseResponse.get_response(action, manager_url, pyload, header)
     return result
 
 
@@ -121,11 +121,11 @@ def add_access_token(sub_parse):
 
     """
     sub_parse.add_argument(
-            '--access_token',
-            help='The access token for operations',
-            nargs='?',
-            type=str,
-            required=True
+        '--access_token',
+        help='The access token for operations',
+        nargs='?',
+        type=str,
+        required=True
     )
 
 
@@ -192,6 +192,8 @@ def pretty_json(input_dict):
     Returns:
         json: json with highlight
     """
-    format_json = json.dumps(input_dict, indent=2, ensure_ascii=False, sort_keys=True)
-    highlight_json = highlight(format_json, lexers.JsonLexer(), formatters.TerminalFormatter())
+    format_json = json.dumps(input_dict, indent=2,
+                             ensure_ascii=False, sort_keys=True)
+    highlight_json = highlight(
+        format_json, lexers.JsonLexer(), formatters.TerminalFormatter())
     return highlight_json
