@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<codewrap>
+<code label="Succeed">
+    <status_code>200</status_code>
+    <message_en>operation succeed</message_en>
+</code>
+<code label="Partial.Succeed">
+    <status_code>206</status_code>
+    <message_en>partial succeed</message_en>
+</code>
+<code label="Server.Error">
+    <status_code>500</status_code>
+    <message_en>internal server error</message_en>
+</code>
+<code label="Param.Error">
+    <status_code>1000</status_code>
+    <message_en>request parameter error</message_en>
+</code>
+<code label="Http.Connect.Error">
+    <status_code>1001</status_code>
+    <message_en>restful connection error</message_en>
+</code>
+<code label="Unknown.Error">
+    <status_code>1002</status_code>
+    <message_en>unknown error</message_en>
+</code>
+<code label="Service.Not.Exist">
+    <status_code>1003</status_code>
+    <message_en>the service is not found</message_en>
+</code>
+<code label="Wrong.File.Format">
+    <status_code>1004</status_code>
+    <message_en>wrong file format</message_en>
+</code>
+<code label="Repo.Content.Incorrect">
+    <status_code>1010</status_code>
+    <message_en>repo content incorrect</message_en>
+</code>
+<code label="Repo.Not.Set">
+    <status_code>1011</status_code>
+    <message_en>repo source is not set</message_en>
+</code>
+<code label="Database.Connect.Error">
+    <status_code>1101</status_code>
+    <message_en>connect to database error</message_en>
+</code>
+<code label="Database.Insert.Error">
+    <status_code>1102</status_code>
+    <message_en>insert data into database fail</message_en>
+</code>
+<code label="Database.Delete.Error">
+    <status_code>1103</status_code>
+    <message_en>delete data from database fail</message_en>
+</code>
+<code label="Database.Query.Error">
+    <status_code>1104</status_code>
+    <message_en>query data from database fail</message_en>
+</code>
+<code label="Data.Exist">
+    <status_code>1105</status_code>
+    <message_en>data has existed</message_en>
+</code>
+<code label="Data.Dependency.Error">
+    <status_code>1106</status_code>
+    <message_en>delete fail for it has dependency</message_en>
+</code>
+<code label="Database.Update.Error">
+    <status_code>1107</status_code>
+    <message_en>update data in database fail</message_en>
+</code>
+<code label="No.Data">
+    <status_code>1108</status_code>
+    <message_en>No data found in database</message_en>
+</code>
+<code label="Wrong.Data">
+    <status_code>1109</status_code>
+    <message_en>The query parameter is not valid, please check again</message_en>
+</code>
+<code label="Login.Error">
+    <status_code>1200</status_code>
+    <message_en>incorrect username or password</message_en>
+</code>
+<code label="Token.Error">
+    <status_code>1201</status_code>
+    <message_en>the session is invalid</message_en>
+</code>
+<code label="Repeat.Login">
+    <status_code>1202</status_code>
+    <message_en>user has logined, repeat login</message_en>
+</code>
+<code label="Key.Error">
+    <status_code>1203</status_code>
+    <message_en>missing or invalid vault password, please certificate the vault password</message_en>
+</code>
+<code label="Change.Password">
+    <status_code>1204</status_code>
+    <message_en>please change the default password or you can not use</message_en>
+</code>
+<code label="Repeat.Password">
+    <status_code>1205</status_code>
+    <message_en>the new password is same as old password, change fail</message_en>
+</code>
+<code label="Change.Password.Fail">
+    <status_code>1206</status_code>
+    <message_en>change password fail</message_en>
+</code>
+<code label="Token.Expire">
+    <status_code>1207</status_code>
+    <message_en>token expired</message_en>
+</code>
+<code label="Task.Execution.Fail">
+    <status_code>1301</status_code>
+    <message_en>Task execution failed</message_en>
+</code>
+<code label="Repeat.Task.Execution">
+    <status_code>1302</status_code>
+    <message_en>Task execute repeatedly</message_en>
+</code>
+<code label="Set.Agent.Plugin.Status.Failed">
+    <status_code>1401</status_code>
+    <message_en>Set agent plugin status failed</message_en>
+</code>
+<code label="Workflow.Assign.Model.Fail">
+    <status_code>1501</status_code>
+    <message_en>An error occurred when assign model to the workflow</message_en>
+</code>
+<code label="Auth.Error">
+    <status_code>1601</status_code>
+    <message_en>authentication failed</message_en>
+</code>
+<code label="Auth.Userinfo.Sync.Error">
+    <status_code>1602</status_code>
+    <message_en>authentication user information is incorrectly synchronized</message_en>
+</code>
+<code label="No.Bound">
+    <status_code>1603</status_code>
+    <message_en>not bind a local account</message_en>
+</code>
+<code label="Generation.Token.Error">
+    <status_code>1604</status_code>
+    <message_en>Token generation failed</message_en>
+</code>
+<code label="Repeat.Bind">
+    <status_code>1605</status_code>
+    <message_en>Bind the same user repeatedly</message_en>
+</code>
+<code label="Ssh.Connection.Error">
+    <status_code>1701</status_code>
+    <message_en>Connection failed, invalid ip address or port</message_en>
+</code>
+<code label="Ssh.Authentication.Error">
+    <status_code>1702</status_code>
+    <message_en>Authentication failed, invalid username or password!</message_en>
+</code>
+<code label="Execute.Command.Error">
+    <status_code>1703</status_code>
+    <message_en>SSH execute command error</message_en>
+</code>
+</codewrap>

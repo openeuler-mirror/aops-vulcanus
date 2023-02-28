@@ -2,8 +2,12 @@
 """
 Description: setup up the A-ops utils module.
 """
+import os
 from setuptools import setup, find_packages
+from distutils.sysconfig import get_python_lib
 
+
+MAP_XML = os.path.join(get_python_lib(), "vulcanus", "restful", "resp")
 setup(
     name='aops-vulcanus',
     version='2.0.0',
@@ -27,10 +31,9 @@ setup(
     ],
     author='cmd-lsw-yyy-zyc',
     data_files=[
-        ('/etc/aops', ['conf/system.ini'])
+        ('/etc/aops', ['conf/system.ini']),
+        (MAP_XML, ["vulcanus/restful/resp/map.xml"])
     ],
     scripts=['aops-vulcanus'],
     zip_safe=False
 )
-
-
