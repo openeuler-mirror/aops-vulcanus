@@ -156,4 +156,8 @@
     <status_code>1703</status_code>
     <message_en>SSH execute command error</message_en>
 </code>
+<code label="Add.Host.Failed">
+    <status_code>1801</status_code>
+    <message_en>All host add failed</message_en>
+</code>
 </codewrap>
