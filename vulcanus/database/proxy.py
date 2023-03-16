@@ -39,7 +39,7 @@ class DataBaseProxy(ABC):
         """
 
     @abstractmethod
-    def connect(self):
+    def connect(self, session=None):
         """
         proxy should implement connect function
         """
@@ -173,7 +173,7 @@ class ElasticsearchProxy(DataBaseProxy):
         self.connected = False
         self._es_db = None
 
-    def connect(self):
+    def connect(self, session=None):
         """
         Connect to elasticsearch server
 
@@ -535,7 +535,7 @@ class PromDbProxy(DataBaseProxy):
         self.connected = False
         self._prom = None
 
-    def connect(self):
+    def connect(self, session=None):
         """
         Make a connect to database connection pool
 
