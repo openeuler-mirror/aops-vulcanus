@@ -15,6 +15,7 @@ Time:
 Author:
 Description: response function
 """
+from flask import g
 import os
 import json
 from functools import wraps
@@ -25,7 +26,7 @@ import requests
 from flask import request, jsonify
 from flask_restful import Resource
 from werkzeug.utils import secure_filename
-from vulcanus.database.proxy import DataBaseProxy, ElasticsearchProxy, RedisProxy
+from vulcanus.database.proxy import DataBaseProxy, ElasticsearchProxy, RedisProxy, MysqlProxy, PromDbProxy
 from vulcanus.log.log import LOGGER
 from vulcanus.restful.serialize.validate import validate
 from vulcanus.restful.resp import make_response, state
@@ -163,7 +164,7 @@ class BaseResponse(Resource):
             dict: request args
             int: verify status code
         """
-        args = request.args.to_dict() if request.method == "GET" else request.get_json()
+        args = request.args.to_dict() if request.method == "GET" else request.get_json() or dict()
 
         if debug:
             LOGGER.debug(request.base_url)
@@ -242,7 +243,7 @@ class BaseResponse(Resource):
         return jsonify(make_response(label=code, message=message, data=data))
 
     @staticmethod
-    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None, session=None):
+    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None):
         def verify_handle(api_view):
             @wraps(api_view)
             def wrapper(self, **kwargs):
@@ -252,11 +253,8 @@ class BaseResponse(Resource):
                     return self.response(code=status)
 
                 params.update(kwargs)
-                if proxy:
-                    proxy_connect = proxy.connect() if isinstance(
-                        proxy, ElasticsearchProxy) else proxy.connect(session=session)
-                    if not proxy_connect:
-                        return self.response(code=state.DATABASE_CONNECT_ERROR)
+                if proxy and proxy.connect(session=g.session):
+                    return self.response(code=state.DATABASE_CONNECT_ERROR)
 
                 return api_view(self, callback=proxy, **params) if proxy else api_view(self, **params)
 

@@ -50,7 +50,7 @@ services:
     volumes:
       - /opt/kafka/data:/data
     ports:
-      - 2182:2181
+      - 2181:2181
   kafka:
     image: ubuntu/kafka:latest
     container_name: kafka
