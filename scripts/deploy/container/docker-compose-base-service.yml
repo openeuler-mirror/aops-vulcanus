@@ -52,7 +52,7 @@ services:
     ports:
       - 2181:2181
   kafka:
-    image: ubuntu/kafka:latest
+    image: wurstmeister/kafka
     container_name: kafka
     user: root
     ports:

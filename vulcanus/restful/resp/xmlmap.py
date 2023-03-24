@@ -132,6 +132,9 @@ class Response:
         if "message" not in kwargs:
             self.response_body["message"] = None
 
-        self.response_body.update(**kwargs)
+        if "data" in kwargs and not kwargs["data"]:
+            del kwargs["data"]
+
+        self.response_body = kwargs
         self._set_body(self._response_content(label), zh)
         return self.response_body
