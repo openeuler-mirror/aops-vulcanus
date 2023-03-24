@@ -82,6 +82,18 @@ function download_install_mysql() {
   fi
 }
 
+function download_install_redis() {
+  echo "[INFO] start to download and install redis"
+
+  if yum install redis -y; then
+    echo "[INFO] download and install redis success"
+  else
+    echo "[ERROR] install redis failed"
+    echo "[ERROR] Please check the files under the /etc/yum.repos.d/ is config correct"
+    exit 1
+  fi
+}
+
 function start_mysql_service() {
   echo "[INFO] start to start mysql service"
   sudo systemctl start mysqld
@@ -108,6 +120,9 @@ function install_database() {
   elif [ "${INSTALL_SOFTWARE}" = "mysql" ]; then
     download_install_mysql
     start_mysql_service
+  elif [ "${INSTALL_SOFTWARE}" = "redis" ]; then
+    download_install_redis
+    sudo systemctl start redis
   else
     echo "Failed to parse parameters, please use 'elasticsearch/mysql'"
   fi

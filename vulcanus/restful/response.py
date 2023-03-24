@@ -243,7 +243,7 @@ class BaseResponse(Resource):
         return jsonify(make_response(label=code, message=message, data=data))
 
     @staticmethod
-    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None):
+    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None, session=None):
         def verify_handle(api_view):
             @wraps(api_view)
             def wrapper(self, **kwargs):
@@ -253,7 +253,8 @@ class BaseResponse(Resource):
                     return self.response(code=status)
 
                 params.update(kwargs)
-                if proxy and proxy.connect(session=g.session):
+                _session = session if session else g.session
+                if proxy and not proxy.connect(session=_session):
                     return self.response(code=state.DATABASE_CONNECT_ERROR)
 
                 return api_view(self, callback=proxy, **params) if proxy else api_view(self, **params)
