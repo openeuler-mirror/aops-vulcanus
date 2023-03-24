@@ -1,5 +1,5 @@
 Name:		aops-vulcanus
-Version:	v2.0.0
+Version:	v1.2.0
 Release:	1
 Summary:	A basic tool libraries of aops, including logging, configure and response, etc.
 License:	MulanPSL2
@@ -58,5 +58,17 @@ cp -r scripts %{buildroot}/opt/aops/
 
 
 %changelog
-* Sat Oct 8 2022 lostway<luoshengwei@huawei.com> - v2.0.0-1
+* Fri Mar 24 2023 wenixn<shusheng.wen@outlook.com> - v1.2.0-1
+- update token authentication method; update the structure of response body
+
+* Tue Dec 27 2022 wenxin<shusheng.wen@outlook.com> - v1.1.1-2
+- Modify uwsgi configuration file fields
+
+* Fri Dec 02 2022 wenxin<shusheng.wen@outlook.com> - v1.1.1-1
+- update get response
+
+* Fri Nov 25 2022 wenxin<shusheng.wen@outlook.com> - v1.1.0-1
+- Fix bug: fix file creation error
+
+* Tue Nov 22 2022 zhuyuncheng<zhuyuncheng@huawei.com> - v1.0.0-1
 - Package init
