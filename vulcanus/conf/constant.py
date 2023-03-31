@@ -25,22 +25,13 @@ SYSTEM_CONFIG_PATH = os.path.join(BASE_CONFIG_PATH, 'system.ini')
 # path of proxy configuration
 MANAGER_CONFIG_PATH = os.path.join(BASE_CONFIG_PATH, 'manager.ini')
 
-HOST_INFO_INDEX = 'host_information'
-TEMPLATE_INDEX = "ansible_templates"
+
 TASK_INDEX = "ansible_task"
-DATA_HISTORY = "history"
-DATA_MESSAGES = "messages"
-DIAG_REPORT_INDEX = "diag_report"
-DIAG_TREE_INDEX = "diag_tree"
-DIAG_TASK_INDEX = "diag_task"
-CHECK_RESULT_INDEX = "check_result"
-CHECK_RULE_INDEX = "check_rule"
 
 # url format
 URL_FORMAT = "http://%s:%s%s"
 
 # manager route
-REGISTER_HOST = "/manage/host/register"
 ADD_HOST = "/manage/host/add"
 ADD_HOST_BATCH = "/manage/host/add/batch"
 GET_HOST_TEMPLATE_FILE = "/manage/host/file/template"
@@ -60,7 +51,6 @@ GET_GROUP = "/manage/host/group/get"
 COLLECT_CONFIG = '/manage/config/collect'
 
 USER_LOGIN = "/manage/account/login"
-USER_CERTIFICATE = "/manage/account/certificate"
 CHANGE_PASSWORD = '/manage/account/change'
 ADD_USER = '/manage/account/add'
 GITEE_AUTH_LOGIN = "/manage/account/gitee/login"
@@ -73,76 +63,10 @@ EXECUTE_REPO_SET = '/manage/vulnerability/repo/set'
 EXECUTE_CVE_FIX = '/manage/vulnerability/cve/fix'
 EXECUTE_CVE_SCAN = '/manage/vulnerability/cve/scan'
 
-# database route
-DATA_ADD_HOST = "/data/host/add"
-DATA_DELETE_HOST = "/data/host/delete"
-DATA_GET_HOST = "/data/host/get"
-DATA_GET_HOST_COUNT = "/data/host/count"
-
-DATA_ADD_GROUP = "/data/host/group/add"
-DATA_DELETE_GROUP = "/data/host/group/delete"
-DATA_GET_GROUP = "/data/host/group/get"
-
-DATA_GET_HOST_INFO = "/data/host/info/get"
-DATA_GET_HOST_INFO_BY_USER = "/data/host/info/get/user"
-DATA_DELETE_HOST_INFO = "/data/host/info/delete"
-DATA_SAVE_HOST_INFO = "/data/host/info/save"
-
-DATA_GET_DATA = "/data/data/get"
-
-DATA_ADD_TEMPLATE = "/data/manage/template/add"
-DATA_DELETE_TEMPLATE = "/data/manage/template/delete"
-DATA_GET_TEMPLATE = "/data/manage/template/get"
-
-DATA_ADD_TASK = "/data/manage/task/add"
-DATA_DELETE_TASK = "/data/manage/task/delete"
-DATA_GET_TASK = "/data/manage/task/get"
-
-DATA_ADD_DIAG_TREE = "/data/diag/tree/add"
-DATA_DELETE_DIAG_TREE = "/data/diag/tree/delete"
-DATA_GET_DIAG_TREE = "/data/diag/tree/get"
-DATA_SAVE_DIAG_REPORT = "/data/diag/report/save"
-DATA_DELETE_DIAG_REPORT = "/data/diag/report/delete"
-DATA_GET_DIAG_REPORT = "/data/diag/report/get"
-DATA_GET_DIAG_REPORT_LIST = "/data/diag/report/get_list"
-DATA_GET_DIAG_PROCESS = "/data/diag/process/query"
-DATA_SAVE_DIAG_TASK = "/data/diag/task/save"
-DATA_GET_DIAG_TASK = "/data/diag/task/get"
-
-DATA_ADD_CHECK_RULE = "/data/check/rule/add"
-DATA_DELETE_CHECK_RULE = "/data/check/rule/delete"
-DATA_GET_CHECK_RULE = "/data/check/rule/get"
-DATA_GET_CHECK_RULE_COUNT = "/data/check/rule/count"
-DATA_SAVE_CHECK_RESULT = "/data/check/result/save"
-DATA_DELETE_CHECK_RESULT = "/data/check/result/delete"
-DATA_GET_CHECK_RESULT = "/data/check/result/get"
-DATA_GET_CHECK_RESULT_COUNT = "/data/check/result/count"
-
-DATA_USER_LOGIN = "/data/account/login"
-DATA_USER_CHANGE_PASSWORD = "/data/account/change"
-
-# diagnose route
-DIAG_IMPORT_TREE = "/diag/tree/import"
-DIAG_GET_TREE = "/diag/tree/get"
-DIAG_DELETE_TREE = "/diag/tree/delete"
-DIAG_GET_TASK = "/diag/task/get"
-DIAG_GET_REPORT = "/diag/report/get"
-DIAG_GET_REPORT_LIST = "/diag/report/get_list"
-DIAG_DELETE_REPORT = "/diag/report/delete"
-DIAG_EXECUTE_DIAG = "/diag/execute"
-DIAG_GET_PROGRESS = "/diag/progress/get"
-
-# check route
-CHECK_GET_RESULT = "/check/result/get"
-CHECK_COUNT_RESULT = "/check/result/count"
-CHECK_GET_RULE = "/check/rule/get"
-CHECK_IMPORT_RULE = "/check/rule/import"
-CHECK_DELETE_RULE = "/check/rule/delete"
-CHECK_COUNT_RULE = "/check/rule/count"
-
-# parameter
-MAX_PORT = 65535
-MIN_PORT = 0
+# metric config
+QUERY_METRIC_NAMES = '/manage/host/metric/names'
+QUERY_METRIC_DATA = '/manage/host/metric/data'
+QUERY_METRIC_LIST = '/manage/host/metric/list'
 
 # auth login
 GITEE_OAUTH = "https://gitee.com/oauth/authorize"
