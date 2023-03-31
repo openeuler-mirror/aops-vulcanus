@@ -63,32 +63,37 @@ install_docker_compose(){
 }
 
 main(){
-    docker-compose -v 
-    if [ $? != 0 ]; then
-        install_docker_compose
-    fi
+    
+    install_docker_compose
     while :
     do
         echo "===========================Container arrangement==========================="
         echo "1. Build the docker container (build)."
-        echo "2. Start the container orchestration service (start)."
-        echo "3. Stop all container services (stop)."
+        echo "2. Start the container orchestration service (start-service/start-env)."
+        echo "3. Stop all container services (stop-service/stop-env)."
+        read "Enter to exit the operation (Q/q)."
         read -p "Select an operation procedure to continue: " operation
         case $operation in
             "build")
                 docker_build
                 docker image prune
             ;;
-            "start")
-                docker-compose -f docker-compose-base-service.yml up -d
-                sleep 15
+            "start-service")
                 docker-compose up -d
             ;;
-            "stop")
-                docker-compose -f docker-compose-base-service.yml down 
+            "start-env")
+                docker-compose -f docker-compose-base-service.yml up -d
+            ;;
+            "stop-service")
                 docker-compose down
             ;;
-            *)
+            "stop-env")
+                docker-compose -f docker-compose-base-service.yml down 
+            ;;
+            "Q")
+                break
+            ;;
+            "q")
                 break
             ;;
         esac
