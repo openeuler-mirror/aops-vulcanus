@@ -19,14 +19,13 @@ from flask import g
 import os
 import json
 from functools import wraps
-from datetime import datetime
-import time
 import uuid
 import requests
+from jwt.exceptions import ExpiredSignatureError
 from flask import request, jsonify
 from flask_restful import Resource
 from werkzeug.utils import secure_filename
-from vulcanus.database.proxy import DataBaseProxy, ElasticsearchProxy, RedisProxy, MysqlProxy, PromDbProxy
+from vulcanus.database.proxy import DataBaseProxy, RedisProxy
 from vulcanus.log.log import LOGGER
 from vulcanus.restful.serialize.validate import validate
 from vulcanus.restful.resp import make_response, state
@@ -133,6 +132,8 @@ class BaseResponse(Resource):
 
         try:
             verify_info = decode_token(token)
+        except ExpiredSignatureError:
+            return state.TOKEN_EXPIRE
         except ValueError:
             return state.TOKEN_ERROR
 
@@ -140,12 +141,6 @@ class BaseResponse(Resource):
             "token_" + verify_info["key"])
         if not cache_token:
             return state.TOKEN_ERROR
-
-        now_time_span = int(time.mktime(time.strptime(datetime.now().strftime(
-            '%Y-%m-%d %H:%M:%S'), "%Y-%m-%d %H:%M:%S")))
-
-        if int(verify_info['exp']) < now_time_span:
-            return state.TOKEN_EXPIRE
 
         args['username'] = verify_info["key"]
         return state.SUCCEED

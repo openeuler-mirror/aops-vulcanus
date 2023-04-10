@@ -13,6 +13,7 @@
 from datetime import datetime, timedelta
 import time
 import jwt
+from jwt.exceptions import ExpiredSignatureError
 from vulcanus.conf.constant import PRIVATE_KEY
 
 
@@ -86,5 +87,7 @@ def decode_token(token):
         raise ValueError("Please enter a valid token")
     try:
         return jwt.decode(token, PRIVATE_KEY, algorithms=["HS256"])
+    except ExpiredSignatureError:
+        raise ExpiredSignatureError("Signature has expired")
     except Exception:
         raise ValueError("It is not a valid token")

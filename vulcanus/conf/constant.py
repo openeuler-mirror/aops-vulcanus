@@ -40,6 +40,8 @@ QUERY_HOST = "/manage/host/get"
 GET_HOST_COUNT = "/manage/host/count"
 AUTH_REDIRECT_URL = "/manage/account/authredirecturl"
 BIND_AUTH_ACCOUNT = "/manage/account/bindaccount"
+REFRESH_TOKEN = "/manage/account/refreshtoken"
+UPDATE_HOST = "/manage/host/update"
 
 QUERY_HOST_DETAIL = "/manage/host/info/query"
 HOST_SCENE_GET = '/manage/host/scene/get'
@@ -75,5 +77,7 @@ GITEE_TOKEN = "https://gitee.com/oauth/token?grant_type=authorization_code"
 GITEE_CLIENT_SECRET = "c6466348389db3a2da3a86ec3b544c19c15f50de513da4dc3edbadaa2e5df792"
 GITEE_USERINFO = "https://gitee.com/api/v5/user"
 PRIVATE_KEY = "sfwsfs{)sdf_+$%{$^%$NI07&*()@$&^*(*(^&%("
-REFRESH_TOKEN_EXP = 43200
+
+# Refresh the token validity period，unit minute
+REFRESH_TOKEN_EXP = 1440
 REDIRECT_URL = "http://127.0.0.1:8000/user/account"
