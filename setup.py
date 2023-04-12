@@ -31,7 +31,7 @@ setup(
     ],
     author='cmd-lsw-yyy-zyc',
     data_files=[
-        ('/etc/aops', ['conf/system.ini']),
+        ('/etc/aops', ['conf/system.ini', "conf/.aops-private-config.ini"]),
         (MAP_XML, ["vulcanus/restful/resp/map.xml"])
     ],
     scripts=['aops-vulcanus'],

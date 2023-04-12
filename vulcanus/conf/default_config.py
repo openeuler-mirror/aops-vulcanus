@@ -24,3 +24,19 @@ log = {
     "MAX_BYTES": 31457280,
     "BACKUP_COUNT": 30
 }
+
+individuation = {
+    "GITEE_CLIENT_ID": "",
+    "GITEE_CLIENT_SECRET": "",
+    "REDIRECT_URL": "",
+    "EXEMPT_AUTHENTICATION": "",
+    "EMAIL_STMP": ""
+}
+
+email = {
+    "SERVER": "",
+    "PORT": 25,
+    "SENDER": "",
+    "AUTHORIZATION_CODE": "",
+    "SMTP_SSL": False
+}

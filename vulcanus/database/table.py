@@ -69,8 +69,8 @@ class Host(Base, MyBase):  # pylint: disable=R0903
 
     def __eq__(self, o):
         return self.user == o.user and (
-                self.host_name == o.host_name or
-                f"{self.host_ip}{self.ssh_port}" == f"{o.host_ip}{o.ssh_port}"
+            self.host_name == o.host_name or
+            f"{self.host_ip}{self.ssh_port}" == f"{o.host_ip}{o.ssh_port}"
         )
 
 
@@ -101,6 +101,7 @@ class User(Base, MyBase):  # pylint: disable=R0903
     username = Column(String(40), primary_key=True)
     password = Column(String(255), nullable=False)
     token = Column(String(40))
+    email = Column(String(40))
 
     host_groups = relationship(
         'HostGroup', order_by=HostGroup.host_group_name, back_populates='user')

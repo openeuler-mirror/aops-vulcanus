@@ -48,6 +48,7 @@ cp -r scripts %{buildroot}/opt/aops/
 %files
 %doc README.*
 %attr(0644,root,root) %{_sysconfdir}/aops/system.ini
+%attr(0640,root,root) %{_sysconfdir}/aops/.aops-private-config.ini
 %{python3_sitelib}/aops_vulcanus*.egg-info
 %{python3_sitelib}/vulcanus/*
 %attr(0755,root,root) %{_bindir}/aops-vulcanus
