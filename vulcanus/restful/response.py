@@ -30,6 +30,7 @@ from vulcanus.log.log import LOGGER
 from vulcanus.restful.serialize.validate import validate
 from vulcanus.restful.resp import make_response, state
 from vulcanus.token import decode_token
+from vulcanus.conf import configuration
 
 
 class BaseResponse(Resource):
@@ -172,6 +173,13 @@ class BaseResponse(Resource):
             verify_res = cls.verify_args(args, schema)
             if verify_res != state.SUCCEED:
                 return args, verify_res
+        exempt_authentication = request.headers.get('exempt_authentication')
+        if exempt_authentication:
+            status = state.SUCCEED if exempt_authentication == configuration.individuation.get(
+                "EXEMPT_AUTHENTICATION") else state.TOKEN_ERROR
+            args["username"] = request.headers.get('local_account')
+            args["timed"] = True
+            return args, status
 
         if need_token:
             verify_res = cls.verify_token(access_token, args)

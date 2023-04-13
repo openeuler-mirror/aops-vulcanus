@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 import time
 import jwt
 from jwt.exceptions import ExpiredSignatureError
-from vulcanus.conf.constant import PRIVATE_KEY
+from vulcanus.conf import configuration
 
 
 __all__ = ["generate_token", "decode_token", "get_timedelta"]
@@ -64,7 +64,7 @@ def generate_token(unique_iden, minutes=20, **kwargs):
         token_body["create_time"] = time.localtime()
         return jwt.encode(
             token_body,
-            PRIVATE_KEY,
+            configuration.individuation.get("PRIVATE_KEY"),
             algorithm="HS256",
             headers=dict(alg="HS256"),
         )
@@ -86,7 +86,7 @@ def decode_token(token):
     if not token:
         raise ValueError("Please enter a valid token")
     try:
-        return jwt.decode(token, PRIVATE_KEY, algorithms=["HS256"])
+        return jwt.decode(token, configuration.individuation.get("PRIVATE_KEY"), algorithms=["HS256"])
     except ExpiredSignatureError:
         raise ExpiredSignatureError("Signature has expired")
     except Exception:

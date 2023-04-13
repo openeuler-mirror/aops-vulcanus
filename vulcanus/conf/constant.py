@@ -72,12 +72,10 @@ QUERY_METRIC_LIST = '/manage/host/metric/list'
 
 # auth login
 GITEE_OAUTH = "https://gitee.com/oauth/authorize"
-GITEE_CLIENT_ID = "7420ebbb10f7f196de479bd3fe30f120691321143fdae882bc8b3320b3dbb71c"
 GITEE_TOKEN = "https://gitee.com/oauth/token?grant_type=authorization_code"
-GITEE_CLIENT_SECRET = "c6466348389db3a2da3a86ec3b544c19c15f50de513da4dc3edbadaa2e5df792"
 GITEE_USERINFO = "https://gitee.com/api/v5/user"
-PRIVATE_KEY = "sfwsfs{)sdf_+$%{$^%$NI07&*()@$&^*(*(^&%("
 
 # Refresh the token validity period，unit minute
 REFRESH_TOKEN_EXP = 1440
-REDIRECT_URL = "http://127.0.0.1:8000/user/account"
+
+PRIVATE_INDIVIDUATION_CONFIG = "/etc/aops/.aops-private-config.ini"
