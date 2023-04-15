@@ -22,6 +22,7 @@ services:
       - 11116:11116
     volumes:
       - /etc/aops/apollo.ini:/etc/aops/apollo.ini
+      - /etc/aops/.aops-private-config.ini:/etc/aops/.aops-private-config.ini
   diana:
     build:
       context: ./aops-diana
@@ -35,6 +36,7 @@ services:
       - 11112:11112
     volumes:
       - /etc/aops/diana.ini:/etc/aops/diana.ini
+      - /etc/aops/.aops-private-config.ini:/etc/aops/.aops-private-config.ini
   zeus:
     build:
       context: ./aops-zeus
@@ -47,3 +49,4 @@ services:
     #   - mysql
     volumes:
       - /etc/aops/zeus.ini:/etc/aops/zeus.ini
+      - /etc/aops/.aops-private-config.ini:/etc/aops/.aops-private-config.ini

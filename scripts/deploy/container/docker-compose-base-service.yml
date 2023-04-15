@@ -66,3 +66,16 @@ services:
       - /opt/kafka/logs:/kafka
     depends_on:
       - zookeeper
+  redis:
+    image: redis:latest
+    container_name: redis
+    environment:
+      - TZ=Asiz/Shanghai
+      - LANG=en_US.UTF-8
+    volumes:
+      - /opt/redis/data:/data
+      - /opt/redis/conf/redis.conf:/etc/redis/redis.conf
+    ports:
+      - 6379:6379
+    hostname: redis
+    command: redis-server /etc/redis/redis.conf

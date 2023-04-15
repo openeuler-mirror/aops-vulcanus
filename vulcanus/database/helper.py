@@ -55,7 +55,8 @@ def create_database_engine(url, pool_size, pool_recycle):
     Returns:
         engine
     """
-    engine = create_engine(url, pool_size=pool_size, pool_recycle=pool_recycle)
+    engine = create_engine(url, pool_size=pool_size,
+                           pool_recycle=pool_recycle, pool_pre_ping=True)
     return engine
 
 

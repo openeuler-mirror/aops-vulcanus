@@ -15,7 +15,7 @@ Time:
 Author:
 Description: response function
 """
-from flask import g
+import sqlalchemy
 import os
 import json
 from functools import wraps
@@ -31,6 +31,7 @@ from vulcanus.restful.serialize.validate import validate
 from vulcanus.restful.resp import make_response, state
 from vulcanus.token import decode_token
 from vulcanus.conf import configuration
+from vulcanus.database.proxy import ElasticsearchProxy, PromDbProxy, MysqlProxy
 
 
 class BaseResponse(Resource):
@@ -246,7 +247,7 @@ class BaseResponse(Resource):
         return jsonify(make_response(label=code, message=message, data=data))
 
     @staticmethod
-    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None, session=None):
+    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None, config=None):
         def verify_handle(api_view):
             @wraps(api_view)
             def wrapper(self, **kwargs):
@@ -256,11 +257,20 @@ class BaseResponse(Resource):
                     return self.response(code=status)
 
                 params.update(kwargs)
-                _session = session if session else g.session
-                if proxy and not proxy.connect(session=_session):
-                    return self.response(code=state.DATABASE_CONNECT_ERROR)
+                if not proxy:
+                    return api_view(self, **params)
+                try:
+                    if not issubclass(proxy, MysqlProxy):
+                        db_proxy = proxy(config)
+                        db_proxy.connect()
+                        return api_view(self, callback=db_proxy, **params)
 
-                return api_view(self, callback=proxy, **params) if proxy else api_view(self, **params)
+                    with proxy(config) as db_proxy:
+                        if isinstance(db_proxy, ElasticsearchProxy):
+                            db_proxy.connect()
+                        return api_view(self, callback=db_proxy, **params)
+                except sqlalchemy.exc.SQLAlchemyError:
+                    return self.response(code=state.DATABASE_CONNECT_ERROR)
 
             return wrapper
         return verify_handle

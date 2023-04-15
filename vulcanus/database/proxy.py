@@ -17,15 +17,20 @@ Description: Database proxy
 """
 import math
 import redis
+import sqlalchemy
+from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.exc import DisconnectionError
+from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from abc import ABC, abstractmethod
 from urllib3.exceptions import LocationValueError
-import sqlalchemy
 from elasticsearch import Elasticsearch, ElasticsearchException, helpers, TransportError, \
     NotFoundError
 from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
 from redis import Redis, ConnectionPool
 from vulcanus.log.log import LOGGER
+from vulcanus.database.helper import create_database_engine
+from vulcanus.database.helper import make_mysql_engine_url
 
 
 class DataBaseProxy(ABC):
@@ -39,15 +44,9 @@ class DataBaseProxy(ABC):
         """
 
     @abstractmethod
-    def connect(self, session=None):
+    def connect(self):
         """
         proxy should implement connect function
-        """
-
-    @abstractmethod
-    def close(self):
-        """
-        proxy should implement close function
         """
 
 
@@ -56,13 +55,26 @@ class MysqlProxy(DataBaseProxy):
     Proxy of mysql
     """
 
-    def __init__(self):
+    def __init__(self, configuration):
         """
         Class instance initialization
         """
         self.session = None
+        engine_url = make_mysql_engine_url(configuration)
+        self.engine = create_database_engine(engine_url,
+                                             configuration.mysql.get(
+                                                 "POOL_SIZE"),  # pylint: disable=E1101
+                                             configuration.mysql.get("POOL_RECYCLE"))
 
-    def connect(self, session):  # pylint: disable=W0221
+    def _create_session(self):
+        session = sessionmaker()
+        try:
+            session.configure(bind=self.engine)
+            self.session = session()
+        except (DisconnectionError, sqlalchemy.exc.SQLAlchemyError):
+            raise sqlalchemy.exc.SQLAlchemyError("Connection error")
+
+    def connect(self):  # pylint: disable=W0221
         """
         Make a connect to database connection pool
 
@@ -73,7 +85,7 @@ class MysqlProxy(DataBaseProxy):
             bool: connect succeed or fail
         """
         try:
-            self.session = session()
+            self._create_session()
         except sqlalchemy.exc.SQLAlchemyError as error:
             LOGGER.error(error)
             return False
@@ -81,17 +93,43 @@ class MysqlProxy(DataBaseProxy):
         return True
 
     def __del__(self):
-        """
-        Close connection
-        """
-        self.close()
+        self.session.close()
 
-    def close(self):
+    def create_engine(self):
         """
-        Close connection
+        Create related database engine connections
         """
-        if self.session:
-            self.session.close()
+        self._create_session()
+        return self
+
+    def __enter__(self):
+        """
+        Description: functional description:Create a context manager for the database connection
+        Args:
+
+        Returns:
+            Class instance
+        Raises:
+
+        """
+
+        database_engine = self.create_engine()
+        return database_engine
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        """
+        Release the database connection pool and close the connection
+
+        Args:
+            exc_type: Abnormal type
+            exc_val: Abnormal value
+            exc_tb: Abnormal table
+
+        """
+        if isinstance(exc_type, (AttributeError)):
+            raise SQLAlchemyError(exc_val)
+
+        self.session.close()
 
     def insert(self, table, data):
         """
@@ -173,7 +211,7 @@ class ElasticsearchProxy(DataBaseProxy):
         self.connected = False
         self._es_db = None
 
-    def connect(self, session=None):
+    def connect(self):
         """
         Connect to elasticsearch server
 
@@ -535,7 +573,7 @@ class PromDbProxy(DataBaseProxy):
         self.connected = False
         self._prom = None
 
-    def connect(self, session=None):
+    def connect(self):
         """
         Make a connect to database connection pool
 
