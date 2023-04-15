@@ -38,5 +38,6 @@ email = {
     "PORT": 25,
     "SENDER": "",
     "AUTHORIZATION_CODE": "",
-    "SMTP_SSL": False
+    "SMTP_SSL": False,
+    "ENABLED": False
 }
