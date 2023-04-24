@@ -44,10 +44,6 @@ prometheus(){
 docker_build(){
     copy_aops_conf
     prepare_dockerfile_repo
-    storage_mysql_data
-    storage_es_data
-    prometheus
-    docker-compose -f docker-compose-base-service.yml build --no-cache
     docker-compose build --no-cache
     rm ./aops-apollo/*.repo
     rm ./aops-diana/*.repo
@@ -56,14 +52,21 @@ docker_build(){
 }
 
 install_docker_compose(){
-    installed_docker_compose=`rpm -ql docker-compose`
-    if [ "$(echo $installed_docker_compose | grep "is not installed")" != "" ]; then
+    docker_compose_installed=`rpm -q docker-compose`
+    if [ $? -ne 0 ] ; then
         dnf install docker-compose -y
+    else
+        echo "docker-compose is already installed."
+    fi
+    docker_installed=`rpm -q docker`
+    if [ $? -ne 0 ] ; then
+        dnf install docker -y
+    else
+        echo "docker is already installed."
     fi
 }
 
 main(){
-    
     install_docker_compose
     while :
     do
@@ -71,7 +74,7 @@ main(){
         echo "1. Build the docker container (build)."
         echo "2. Start the container orchestration service (start-service/start-env)."
         echo "3. Stop all container services (stop-service/stop-env)."
-        read "Enter to exit the operation (Q/q)."
+        echo "Enter to exit the operation (Q/q)."
         read -p "Select an operation procedure to continue: " operation
         case $operation in
             "build")
@@ -82,6 +85,9 @@ main(){
                 docker-compose up -d
             ;;
             "start-env")
+                prometheus
+                storage_es_data
+                storage_mysql_data
                 docker-compose -f docker-compose-base-service.yml up -d
             ;;
             "stop-service")
