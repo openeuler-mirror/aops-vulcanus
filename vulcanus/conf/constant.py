@@ -53,6 +53,7 @@ GET_GROUP = "/manage/host/group/get"
 COLLECT_CONFIG = '/manage/config/collect'
 
 USER_LOGIN = "/manage/account/login"
+LOGOUT = "/manage/account/logout"
 CHANGE_PASSWORD = '/manage/account/change'
 ADD_USER = '/manage/account/add'
 GITEE_AUTH_LOGIN = "/manage/account/gitee/login"

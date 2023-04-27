@@ -15,6 +15,7 @@ Time:
 Author:
 Description:
 """
+import re
 from marshmallow import ValidationError
 
 
@@ -42,3 +43,33 @@ def validate(verifier, data, load=False):
         errors = verifier().validate(data)
 
     return result, errors
+
+
+class ValidateRules:
+    """
+        Custom validation rules
+    """
+
+    @staticmethod
+    def space_character_check(string: str) -> None:
+        """
+            one of validation rules for string, no spaces are allowed at the beginning or end.
+        """
+        if len(string.strip()) != len(string):
+            raise ValidationError("there may be space character exists at the beginning or end!")
+
+    @staticmethod
+    def account_name_check(string: str) -> None:
+        """
+            validation rules for username, which only contains string or number
+        """
+        if not re.findall("[a-zA-Z0-9]{5,20}", string):
+            raise ValidationError("username should only contains string or number, between 5 and 20 characters!")
+
+    @staticmethod
+    def account_password_check(string: str) -> None:
+        """
+            validation rules for password, which only contains string or number
+        """
+        if not re.findall("[a-zA-Z0-9]{6,20}", string):
+            raise ValidationError("password should only contains string or number, between 6 and 20 characters!!")
