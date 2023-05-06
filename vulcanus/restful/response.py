@@ -139,9 +139,8 @@ class BaseResponse(Resource):
         except ValueError:
             return state.TOKEN_ERROR
 
-        cache_token = RedisProxy.redis_connect.get(
-            "token_" + verify_info["key"])
-        if not cache_token:
+        cache_token = RedisProxy.redis_connect.get("token_" + verify_info["key"])
+        if not cache_token or cache_token != token:
             return state.TOKEN_ERROR
 
         args['username'] = verify_info["key"]
