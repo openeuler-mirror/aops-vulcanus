@@ -69,9 +69,9 @@ harakiri=${harakiri}
 processes=${processes}
 lazy-apps=true
 daemonize=${daemonize}" >"${OUT_PATH}"/"${service_name}".ini
-  if [ ${gevent} == true ]
+  if [ ${gevent} ]
   then
-    echo "gevent=100
+    echo "gevent=${gevent}
 gevent-monkey-patch=true" >>"${OUT_PATH}"/"${service_name}".ini
   else
     echo "threads=${threads}" >>"${OUT_PATH}"/"${service_name}".ini
