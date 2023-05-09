@@ -56,7 +56,7 @@ class Host(Base, MyBase):  # pylint: disable=R0903
     last_scan = Column(Integer)
     scene = Column(String(255))
     os_version = Column(String(40))
-    ssh_user = Column(String(20), default="root")
+    ssh_user = Column(String(40), default="root")
     ssh_port = Column(Integer(), default=22)
     pkey = Column(String(2048))
     status = Column(Integer(), default=2)
