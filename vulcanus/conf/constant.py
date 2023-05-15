@@ -65,6 +65,7 @@ AGENT_METRIC_SET = '/manage/agent/metric/set'
 EXECUTE_REPO_SET = '/manage/vulnerability/repo/set'
 EXECUTE_CVE_FIX = '/manage/vulnerability/cve/fix'
 EXECUTE_CVE_SCAN = '/manage/vulnerability/cve/scan'
+EXECUTE_CVE_ROLLBACK = "/manage/vulnerability/cve/rollback"
 
 # metric config
 QUERY_METRIC_NAMES = '/manage/host/metric/names'
