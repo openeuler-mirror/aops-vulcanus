@@ -67,7 +67,6 @@ callable=app
 http-timeout=${http_timeout}
 harakiri=${harakiri}
 processes=${processes}
-lazy-apps=true
 daemonize=${daemonize}" >"${OUT_PATH}"/"${service_name}".ini
   if [ ${gevent} ]
   then
