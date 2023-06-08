@@ -16,7 +16,8 @@ Author:
 Description:
 """
 import re
-from marshmallow import ValidationError
+
+from marshmallow import Schema, ValidationError, fields
 
 
 def validate(verifier, data, load=False):
@@ -73,3 +74,11 @@ class ValidateRules:
         """
         if not re.findall("[a-zA-Z0-9]{6,20}", string):
             raise ValidationError("password should only contains string or number, between 6 and 20 characters!!")
+
+
+class PaginationSchema(Schema):
+    """
+        filter schema of paging parameter
+    """
+    page = fields.Integer(required=False, validate=lambda s: 10**6 > s > 0)
+    per_page = fields.Integer(required=False, validate=lambda s: 10**3 > s > 0)
