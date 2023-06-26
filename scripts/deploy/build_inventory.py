@@ -53,7 +53,7 @@ def parse_all_dict(file_name: str, component_list: list) -> dict:
         component_list(list): component list to install
 
     Returns:
-        component_dict_list(dict): component info 
+        component_dict_list(dict): component info
     """
     component_dict_list = dict()
     for component in component_list:
@@ -62,23 +62,28 @@ def parse_all_dict(file_name: str, component_list: list) -> dict:
         component_dict_list["{}_hosts".format(component)]["hosts"] = {}
         key_list = component_sheet.columns.tolist()
         for index, row in component_sheet.iterrows():
-            component_dict_list["{}_hosts".format(component)]["hosts"][row.host_name] = dict()
+            component_dict_list["{}_hosts".format(component)]["hosts"][
+                row.host_name
+            ] = dict()
             for key in key_list:
                 if key == "host_name":
                     continue
-                component_dict_list["{}_hosts".format(component)]["hosts"][row.host_name][key] = getattr(row, key)
-                component_dict_list["{}_hosts".format(component)]["hosts"][row.host_name][
-                    "ansible_python_interpreter"] = "/usr/bin/python3"
+                component_dict_list["{}_hosts".format(component)]["hosts"][
+                    row.host_name
+                ][key] = getattr(row, key)
+                component_dict_list["{}_hosts".format(component)]["hosts"][
+                    row.host_name
+                ]["ansible_python_interpreter"] = "/usr/bin/python3"
 
     return component_dict_list
 
 
-def dump_to_yaml(component_dict_list:dict, inventory_config_list: dict) ->None:
+def dump_to_yaml(component_dict_list: dict, inventory_config_list: dict) -> None:
     """
         Save inventory info to inventory yaml
 
     Args:
-        component_dict_list(dict): host component info 
+        component_dict_list(dict): host component info
         inventory_config_list(dict): inventory config list
 
     Returns:
@@ -92,7 +97,7 @@ def dump_to_yaml(component_dict_list:dict, inventory_config_list: dict) ->None:
                 continue
             hosts_info_json[host_info] = component_dict_list.get(host_info)
         inventory_file_path = os.path.join(OUTPUT_DIR, component)
-        with open(inventory_file_path, 'w', encoding="utf-8") as inventory_file:
+        with open(inventory_file_path, "w", encoding="utf-8") as inventory_file:
             yaml.dump(hosts_info_json, inventory_file)
 
 

@@ -45,6 +45,7 @@ class Host(Base, MyBase):  # pylint: disable=R0903
     """
     Host table
     """
+
     __tablename__ = "host"
 
     host_id = Column(Integer(), primary_key=True, autoincrement=True)
@@ -61,16 +62,15 @@ class Host(Base, MyBase):  # pylint: disable=R0903
     pkey = Column(String(2048))
     status = Column(Integer(), default=2)
 
-    user = Column(String(40), ForeignKey('user.username'))
-    host_group_id = Column(Integer, ForeignKey('host_group.host_group_id'))
+    user = Column(String(40), ForeignKey("user.username"))
+    host_group_id = Column(Integer, ForeignKey("host_group.host_group_id"))
 
-    host_group = relationship('HostGroup', back_populates='hosts')
-    owner = relationship('User', back_populates='hosts')
+    host_group = relationship("HostGroup", back_populates="hosts")
+    owner = relationship("User", back_populates="hosts")
 
     def __eq__(self, o):
         return self.user == o.user and (
-            self.host_name == o.host_name or
-            f"{self.host_ip}{self.ssh_port}" == f"{o.host_ip}{o.ssh_port}"
+            self.host_name == o.host_name or f"{self.host_ip}{self.ssh_port}" == f"{o.host_ip}{o.ssh_port}"
         )
 
 
@@ -78,15 +78,16 @@ class HostGroup(Base, MyBase):
     """
     Host group table
     """
+
     __tablename__ = "host_group"
 
     host_group_id = Column(Integer, autoincrement=True, primary_key=True)
     host_group_name = Column(String(20))
     description = Column(String(60))
-    username = Column(String(40), ForeignKey('user.username'))
+    username = Column(String(40), ForeignKey("user.username"))
 
-    user = relationship('User', back_populates='host_groups')
-    hosts = relationship('Host', back_populates='host_group')
+    user = relationship("User", back_populates="host_groups")
+    hosts = relationship("Host", back_populates="host_group")
 
     def __eq__(self, o):
         return self.username == o.username and self.host_group_name == o.host_group_name
@@ -96,6 +97,7 @@ class User(Base, MyBase):  # pylint: disable=R0903
     """
     User Table
     """
+
     __tablename__ = "user"
 
     username = Column(String(40), primary_key=True)
@@ -103,9 +105,8 @@ class User(Base, MyBase):  # pylint: disable=R0903
     token = Column(String(40))
     email = Column(String(40))
 
-    host_groups = relationship(
-        'HostGroup', order_by=HostGroup.host_group_name, back_populates='user')
-    hosts = relationship('Host', back_populates='owner')
+    host_groups = relationship("HostGroup", order_by=HostGroup.host_group_name, back_populates="user")
+    hosts = relationship("Host", back_populates="owner")
 
     @staticmethod
     def hash_password(password):
@@ -120,6 +121,7 @@ class Auth(Base, MyBase):
     """
     Auth table
     """
+
     __tablename__ = "auth"
 
     auth_id = Column(String(32), primary_key=True)
@@ -127,7 +129,7 @@ class Auth(Base, MyBase):
     email = Column(String(50))
     nick_name = Column(String(20))
     auth_type = Column(String(20))
-    username = Column(String(40), ForeignKey('user.username'))
+    username = Column(String(40), ForeignKey("user.username"))
 
 
 def create_utils_tables(base, engine):
@@ -141,6 +143,5 @@ def create_utils_tables(base, engine):
     """
     # pay attention, the sequence of list is important. Base table need to be listed first.
     tables = [User, HostGroup, Host, Auth]
-    tables_objects = [base.metadata.tables[table.__tablename__]
-                      for table in tables]
+    tables_objects = [base.metadata.tables[table.__tablename__] for table in tables]
     create_tables(base, engine, tables=tables_objects)

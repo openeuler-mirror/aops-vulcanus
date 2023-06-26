@@ -50,8 +50,7 @@ class XmlParse:
         try:
             self.xml = et.parse(xml_path)
         except Exception:
-            raise ValueError(
-                f"Content of the xml file is incorrect: {xml_path}")
+            raise ValueError(f"Content of the xml file is incorrect: {xml_path}")
 
     def clear_xml(self):
         self.xml = None
@@ -109,11 +108,8 @@ class Response:
         return self.response_body
 
     def _set_body(self, body, zh=False):
-
         if "message" not in self.response_body or self.response_body["message"] is None:
-            self.response_body["message"] = (
-                body["message_zh"] if zh else body["message_en"]
-            )
+            self.response_body["message"] = body["message_zh"] if zh else body["message_en"]
         self.response_body["code"] = body["status_code"]
         self.response_body["label"] = body["label"]
 

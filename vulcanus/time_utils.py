@@ -24,7 +24,7 @@ from datetime import datetime
 from vulcanus.log.log import LOGGER
 from vulcanus.validate import validate_time
 
-TIME_FORMAT = '%Y%m%d-%H:%M:%S'
+TIME_FORMAT = "%Y%m%d-%H:%M:%S"
 
 
 def time_transfer(start_time, end_time):
@@ -41,11 +41,10 @@ def time_transfer(start_time, end_time):
     if start_time is None:
         start_time = 0
     else:
-        if '-' not in start_time:
-            start_time += '19000101-00:00:00'
+        if "-" not in start_time:
+            start_time += "19000101-00:00:00"
         if not validate_time(start_time, TIME_FORMAT):
-            LOGGER.error(
-                'The start time format is not correct, please refer to %s', TIME_FORMAT)
+            LOGGER.error("The start time format is not correct, please refer to %s", TIME_FORMAT)
             sys.exit(0)
         else:
             start_time_struct = datetime.strptime(start_time, TIME_FORMAT)
@@ -58,18 +57,17 @@ def time_transfer(start_time, end_time):
         # if end time is not specified, use the current time
         end_time = now
     else:
-        if '-' not in end_time:
-            end_time += '21001230-23:59:59'
+        if "-" not in end_time:
+            end_time += "21001230-23:59:59"
         if not validate_time(end_time, TIME_FORMAT):
-            LOGGER.error(
-                'The end time format is not correct, please refer to %s', TIME_FORMAT)
+            LOGGER.error("The end time format is not correct, please refer to %s", TIME_FORMAT)
             sys.exit(0)
         else:
             end_time_struct = datetime.strptime(end_time, TIME_FORMAT)
             end_time = min(int(end_time_struct.timestamp()), now)
 
     if start_time > end_time:
-        LOGGER.error('The time range is not correct, please check again.')
+        LOGGER.error("The time range is not correct, please check again.")
         sys.exit(0)
 
     return start_time, end_time
@@ -92,15 +90,19 @@ def time_check_generate(starttime, endtime):
             starttime = endtime + dt.timedelta(hours=-1)
         else:
             if not validate_time(endtime, TIME_FORMAT):
-                LOGGER.error('The start time format is not correct, please refer to %s',
-                             TIME_FORMAT)
+                LOGGER.error(
+                    "The start time format is not correct, please refer to %s",
+                    TIME_FORMAT,
+                )
                 sys.exit(0)
             starttime = datetime.strptime(endtime, TIME_FORMAT) + dt.timedelta(hours=-1)
     else:
         if endtime == "":
             if not validate_time(starttime, TIME_FORMAT):
-                LOGGER.error('The start time format is not correct, please refer to %s',
-                             TIME_FORMAT)
+                LOGGER.error(
+                    "The start time format is not correct, please refer to %s",
+                    TIME_FORMAT,
+                )
                 sys.exit(0)
             endtime = datetime.strptime(starttime, TIME_FORMAT) + dt.timedelta(hours=+1)
 

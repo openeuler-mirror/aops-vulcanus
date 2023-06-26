@@ -31,7 +31,7 @@ def get_primary_data(data):
     Returns:
         str: key of the anchor data
     """
-    res = sorted(data, key = lambda k: len(data[k]))
+    res = sorted(data, key=lambda k: len(data[k]))
     return res[0]
 
 

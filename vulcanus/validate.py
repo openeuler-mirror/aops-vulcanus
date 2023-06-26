@@ -38,7 +38,7 @@ def validate_path(path, file=True):
         return False
 
     if not os.access(path, os.R_OK):
-        LOGGER.error('Cannot access %s', path)
+        LOGGER.error("Cannot access %s", path)
         return False
 
     if file and os.path.isdir(path):

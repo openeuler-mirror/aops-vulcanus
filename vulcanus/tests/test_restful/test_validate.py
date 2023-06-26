@@ -20,34 +20,25 @@ from marshmallow import Schema, fields
 
 from vulcanus.restful.serialize.validate import validate
 
+
 class Test(Schema):
     a = fields.String(required=True)
-    b = fields.Integer(required=False, validate=lambda a: a > 11,missing=22)
+    b = fields.Integer(required=False, validate=lambda a: a > 11, missing=22)
 
 
 class TestValidate(unittest.TestCase):
     def test_restful_validate(self):
         verifier = Test
-        data = {
-            "a": "c"
-        }
+        data = {"a": "c"}
         res = validate(verifier, data)
         self.assertEqual(len(res[1]), 0)
         self.assertEqual(res[0], data)
 
         res = validate(verifier, data, True)
         self.assertEqual(len(res[1]), 0)
-        expected_res = {
-            "a": "c",
-            "b": 22
-        }
+        expected_res = {"a": "c", "b": 22}
         self.assertEqual(res[0], expected_res)
 
-        data = {
-            "a": 1,
-            "b": 1
-        }
+        data = {"a": 1, "b": 1}
         res = validate(verifier, data)
         self.assertEqual(len(res[1]), 2)
-
-

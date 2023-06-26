@@ -10,11 +10,11 @@
 # PURPOSE.
 # See the Mulan PSL v2 for more details.
 # ******************************************************************************/
-'''
+"""
 Time:
 Author:
 Description:
-'''
+"""
 import os
 import unittest
 
@@ -28,20 +28,9 @@ class TestConf(unittest.TestCase):
         self.config_dir = os.path.abspath(os.path.dirname(__file__))
 
     def test_conf_read(self):
-        config_path = os.path.join(self.config_dir, 'for_test_conf/config.ini')
+        config_path = os.path.join(self.config_dir, "for_test_conf/config.ini")
         conf = Config(config_path, global_config)
-        config = [
-            {
-                "TEST1": 3,
-                "TEST2": 2,
-                "TEST3": 4
-            },
-            {
-                "A": 1,
-                "B": 2,
-                "C": True
-            }
-        ]
+        config = [{"TEST1": 3, "TEST2": 2, "TEST3": 4}, {"A": 1, "B": 2, "C": True}]
 
         self.assertTrue(compare_two_object(config[0], conf.test))
         self.assertTrue(compare_two_object(config[1], conf.test2))

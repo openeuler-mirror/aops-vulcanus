@@ -23,7 +23,7 @@ from vulcanus.log.log import LOGGER
 
 class Email:
     """
-        provide email method
+    provide email method
     """
 
     def __init__(self, server: str, port: int, sender: str, authorization_code: str):
@@ -94,16 +94,18 @@ class Email:
                 </tr>
             </table>
         """
-        table_html = '<table border="1" border="1" cellpadding="5" cellspacing="0" ' \
-                     'style="text-align: center;border-collapse:collapse"  width="100%"><tr>'
+        table_html = (
+            '<table border="1" border="1" cellpadding="5" cellspacing="0" '
+            'style="text-align: center;border-collapse:collapse"  width="100%"><tr>'
+        )
         for column in thead:
-            table_html += f'<th>{column}</th>'
-        table_html += '</tr>'
+            table_html += f"<th>{column}</th>"
+        table_html += "</tr>"
 
         for row in tbody:
-            table_html += '<tr>'
+            table_html += "<tr>"
             for item in row:
-                table_html += f'<td>{item}</td>'
+                table_html += f"<td>{item}</td>"
             table_html += "</tr>"
         table_html += "</table>"
         return table_html

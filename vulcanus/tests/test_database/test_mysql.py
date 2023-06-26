@@ -23,6 +23,7 @@ from vulcanus.database.proxy import MysqlProxy
 from vulcanus.database.helper import create_database_engine
 from vulcanus.tests.test_database.for_mysql.models import Base, Test
 
+
 class TestMysqlProxy(unittest.TestCase):
     def setUp(self):
         mysql_host = "127.0.0.1"
@@ -40,23 +41,14 @@ class TestMysqlProxy(unittest.TestCase):
         self.mysql_proxy.close()
         Base.metadata.drop_all(self.engine)
 
-
     def test_operation(self):
-        data1 = {
-            'name': "Ada",
-            "age": 11
-        }
-        data2 = {
-            'age': 13,
-            "name": "Bob"
-        }
+        data1 = {"name": "Ada", "age": 11}
+        data2 = {"age": 13, "name": "Bob"}
         self.mysql_proxy.insert(Test, data1)
         self.mysql_proxy.insert(Test, data2)
 
         # test select with condition
-        condition = {
-            "name": "Bob"
-        }
+        condition = {"name": "Bob"}
         res = self.mysql_proxy.select([Test.age], condition)
         self.assertEqual(res[1][0][0], 13)
 
@@ -65,9 +57,7 @@ class TestMysqlProxy(unittest.TestCase):
         self.assertEqual(len(res[1]), 2)
 
         # test delete
-        condition = {
-            "age": 11
-        }
+        condition = {"age": 11}
         res = self.mysql_proxy.delete(Test, condition)
         self.assertTrue(res)
         res = self.mysql_proxy.select([Test], condition={})

@@ -28,5 +28,4 @@ def compare_two_object(obj1, obj2):
     Returns:
         bool: whether equal
     """
-    return obj1 == obj2 or (isinstance(obj1, type(obj2)) and
-                            "".join(sorted(str(obj1))) == "".join(sorted(str(obj2))))
+    return obj1 == obj2 or (isinstance(obj1, type(obj2)) and "".join(sorted(str(obj1))) == "".join(sorted(str(obj2))))

@@ -27,7 +27,8 @@ class PaintingRuleError(Exception):
     """
     Self-defined Exception class
     """
-    def __init__(self, error_info=''):
+
+    def __init__(self, error_info=""):
         """
         Init PaintingRuleError exception.
 
@@ -51,6 +52,7 @@ class DiagBook:
     """
     Class of diag excel workbook which contains multiple sheets
     """
+
     def __init__(self, tree_excel_path):
         """
         Init DiagBook object
@@ -77,6 +79,7 @@ class DiagNode:
     """
     Node in diagnostic tree
     """
+
     def __init__(self, name):
         """
         Init DiagNode object
@@ -101,7 +104,7 @@ class DiagNode:
         Returns:
             bool
         """
-        if '|' in self.name:
+        if "|" in self.name:
             return True
         return False
 
@@ -162,8 +165,9 @@ class DiagNode:
             elif self.children_all_trees():
                 self.diag_condition = " || ".join(self.children.keys())
             else:
-                raise PaintingRuleError("Node which have both leaves and subtrees as children, "
-                                        "must define diag condition in Mind Master")
+                raise PaintingRuleError(
+                    "Node which have both leaves and subtrees as children, " "must define diag condition in Mind Master"
+                )
 
         self.dict["condition"] = self.diag_condition
         self.dict["description"] = self.diag_description
@@ -177,6 +181,7 @@ class DiagTree:
     """
     Diag tree sheet
     """
+
     def __init__(self, diag_table):
         """
         Init DiagTree object
@@ -212,13 +217,15 @@ class DiagTree:
 
         """
         if eng_name in self.eng2cn_dict and self.eng2cn_dict[eng_name] != cn_name:
-            raise PaintingRuleError("Check item's English name '%s' mapped to two Chinese "
-                                    "name: '%s', '%s'" %
-                                    (eng_name, self.eng2cn_dict[eng_name], cn_name))
+            raise PaintingRuleError(
+                "Check item's English name '%s' mapped to two Chinese "
+                "name: '%s', '%s'" % (eng_name, self.eng2cn_dict[eng_name], cn_name)
+            )
         if cn_name in self.cn2eng_dict and self.cn2eng_dict[cn_name] != eng_name:
-            raise PaintingRuleError("Check item's Chinese name '%s' mapped to two English "
-                                    "name: '%s', '%s'" %
-                                    (cn_name, self.cn2eng_dict[cn_name], eng_name))
+            raise PaintingRuleError(
+                "Check item's Chinese name '%s' mapped to two English "
+                "name: '%s', '%s'" % (cn_name, self.cn2eng_dict[cn_name], eng_name)
+            )
 
     def create_node(self, name, parent_node):
         """
@@ -234,7 +241,7 @@ class DiagTree:
 
         # if the new_node is a subtree
         if new_node.is_leaf:
-            name_list = name.split('|')
+            name_list = name.split("|")
             cn_name = name_list[0].strip()
             eng_name = name_list[1].strip()
 
@@ -280,13 +287,13 @@ class DiagTree:
                     current_deep = col
 
                 if value.startswith(CONDITION_PRE):
-                    parent_node.diag_condition = value[len(CONDITION_PRE):].strip()
+                    parent_node.diag_condition = value[len(CONDITION_PRE) :].strip()
                     parent_stack.append(parent_node)
                 elif value.startswith(DESCRIPTION_PRE):
-                    parent_node.diag_description = value[len(DESCRIPTION_PRE):].strip()
+                    parent_node.diag_description = value[len(DESCRIPTION_PRE) :].strip()
                     parent_stack.append(parent_node)
                 elif value.startswith(ADVICE_PRE):
-                    parent_node.diag_advice = value[len(ADVICE_PRE):].strip()
+                    parent_node.diag_advice = value[len(ADVICE_PRE) :].strip()
                     parent_stack.append(parent_node)
                 else:
                     new_node = self.create_node(value, parent_node)

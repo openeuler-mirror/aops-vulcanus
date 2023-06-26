@@ -29,21 +29,9 @@ def add_page(sub_parse):
     Args:
         sub_parse(sub_parse): sub_parse of the command
     """
-    sub_parse.add_argument(
-        '--page',
-        help='page of the query',
-        nargs='?',
-        type=int,
-        default=1
-    )
+    sub_parse.add_argument("--page", help="page of the query", nargs="?", type=int, default=1)
 
-    sub_parse.add_argument(
-        '--per_page',
-        help='items per page.',
-        nargs='?',
-        type=int,
-        default=20
-    )
+    sub_parse.add_argument("--per_page", help="items per page.", nargs="?", type=int, default=20)
 
 
 def cli_request(action, manager_url, pyload, header, access_token=None):
@@ -60,7 +48,7 @@ def cli_request(action, manager_url, pyload, header, access_token=None):
         json: response of manager
     """
     if access_token is not None:
-        header['access_token'] = access_token
+        header["access_token"] = access_token
     result = BaseResponse.get_response(action, manager_url, pyload, header)
     print(result)
     return result
@@ -80,7 +68,7 @@ def request_without_print(action, manager_url, pyload, header, access_token=None
         json: response of manager
     """
     if access_token is not None:
-        header['access_token'] = access_token
+        header["access_token"] = access_token
     result = BaseResponse.get_response(action, manager_url, pyload, header)
     return result
 
@@ -95,21 +83,21 @@ def add_query_args(sub_parse, item_list):
 
     """
     sub_parse.add_argument(
-        '--sort',
-        help='sort for the query result, null is no sort',
-        nargs='?',
+        "--sort",
+        help="sort for the query result, null is no sort",
+        nargs="?",
         type=str,
         default="",
-        choices=item_list
+        choices=item_list,
     )
 
     sub_parse.add_argument(
-        '--direction',
-        help='asc or desc of the sort',
-        nargs='?',
+        "--direction",
+        help="asc or desc of the sort",
+        nargs="?",
         type=str,
         default="asc",
-        choices=['asc', 'desc']
+        choices=["asc", "desc"],
     )
 
 
@@ -121,11 +109,11 @@ def add_access_token(sub_parse):
 
     """
     sub_parse.add_argument(
-        '--access_token',
-        help='The access token for operations',
-        nargs='?',
+        "--access_token",
+        help="The access token for operations",
+        nargs="?",
         type=str,
-        required=True
+        required=True,
     )
 
 
@@ -135,23 +123,23 @@ def add_start_and_end(sub_parse):
     Args:
         sub_parse(sub_parse): sub_parse of the command
     """
-    group_start_end = sub_parse.add_argument_group(
-        'group_start_end',
-        'The group for start and end')
+    group_start_end = sub_parse.add_argument_group("group_start_end", "The group for start and end")
 
     group_start_end.add_argument(
-        '--start',
-        nargs='?',
+        "--start",
+        nargs="?",
         type=str,
         default="",
-        help='original date of raw data, default is 1 hour ago.')
+        help="original date of raw data, default is 1 hour ago.",
+    )
 
     group_start_end.add_argument(
-        '--end',
-        nargs='?',
+        "--end",
+        nargs="?",
         type=str,
         default="",
-        help='end date of raw data, default is now')
+        help="end date of raw data, default is now",
+    )
 
 
 def create_table(fields):
@@ -192,8 +180,6 @@ def pretty_json(input_dict):
     Returns:
         json: json with highlight
     """
-    format_json = json.dumps(input_dict, indent=2,
-                             ensure_ascii=False, sort_keys=True)
-    highlight_json = highlight(
-        format_json, lexers.JsonLexer(), formatters.TerminalFormatter())
+    format_json = json.dumps(input_dict, indent=2, ensure_ascii=False, sort_keys=True)
+    highlight_json = highlight(format_json, lexers.JsonLexer(), formatters.TerminalFormatter())
     return highlight_json
