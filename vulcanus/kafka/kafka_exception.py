@@ -19,7 +19,8 @@ class ProducerInitError(Exception):
     """
     Self-defined consumer init failed exception
     """
-    def __init__(self, error_info=''):
+
+    def __init__(self, error_info=""):
         super().__init__(self)
         self.message = error_info
 
@@ -31,7 +32,8 @@ class ConsumerInitError(Exception):
     """
     Self-defined consumer init failed exception
     """
-    def __init__(self, error_info=''):
+
+    def __init__(self, error_info=""):
         super().__init__(self)
         self.message = error_info
 

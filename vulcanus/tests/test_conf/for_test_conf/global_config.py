@@ -15,7 +15,4 @@ Time:
 Author:
 Description:
 """
-test = {
-    "TEST1": 1,
-    "TEST2": 2
-}
+test = {"TEST1": 1, "TEST2": 2}

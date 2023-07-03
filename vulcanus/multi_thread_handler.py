@@ -19,7 +19,7 @@ from vulcanus.log.log import LOGGER
 
 class MultiThreadHandler:
     """
-        A general multi-threaded execution method.
+    A general multi-threaded execution method.
 
     """
 
@@ -65,13 +65,11 @@ class MultiThreadHandler:
 
         """
         if len(self.tasks) == 0:
-            LOGGER.error("The count of tasks is zero, "
-                         "please check and try again.")
+            LOGGER.error("The count of tasks is zero, " "please check and try again.")
             return
 
         if not self._workers:
-            self._workers = len(self.tasks) if \
-                len(self.tasks) < os.cpu_count() else os.cpu_count() * 2
+            self._workers = len(self.tasks) if len(self.tasks) < os.cpu_count() else os.cpu_count() * 2
 
         with ThreadPoolExecutor(max_workers=self.workers) as thread_pool:
             for task in self._tasks:
@@ -100,13 +98,11 @@ class MultiThreadHandler:
             try:
                 res.append(future.result(timeout=future_timeout))
             except TypeError as e:
-                LOGGER.error("An error occurred during thread execution "
-                             "due to incorrect parameter.")
+                LOGGER.error("An error occurred during thread execution " "due to incorrect parameter.")
                 res.append({"message": str(e)})
 
             except Exception:
-                LOGGER.warning("An error occurred during thread execution,"
-                               "please check and try again.")
+                LOGGER.warning("An error occurred during thread execution," "please check and try again.")
                 res.append({"message": future.exception()})
 
         return res

@@ -9,31 +9,31 @@ from distutils.sysconfig import get_python_lib
 
 MAP_XML = os.path.join(get_python_lib(), "vulcanus", "restful", "resp")
 setup(
-    name='aops-vulcanus',
-    version='2.0.0',
+    name="aops-vulcanus",
+    version="2.0.0",
     packages=find_packages(),
     install_requires=[
-        'concurrent-log-handler',
-        'xmltodict',
-        'PyYAML',
-        'marshmallow>=3.13.0',
-        'xlrd',
-        'requests',
-        'prettytable',
-        'pygments',
-        'SQLAlchemy',
-        'elasticsearch>=7',
-        'prometheus_api_client',
-        'urllib3',
-        'Werkzeug',
-        'Flask_RESTful',
-        'Flask'
+        "concurrent-log-handler",
+        "xmltodict",
+        "PyYAML",
+        "marshmallow>=3.13.0",
+        "xlrd",
+        "requests",
+        "prettytable",
+        "pygments",
+        "SQLAlchemy",
+        "elasticsearch>=7",
+        "prometheus_api_client",
+        "urllib3",
+        "Werkzeug",
+        "Flask_RESTful",
+        "Flask",
     ],
-    author='cmd-lsw-yyy-zyc',
+    author="cmd-lsw-yyy-zyc",
     data_files=[
-        ('/etc/aops', ['conf/system.ini', "conf/.aops-private-config.ini"]),
-        (MAP_XML, ["vulcanus/restful/resp/map.xml"])
+        ("/etc/aops", ["conf/system.ini", "conf/.aops-private-config.ini"]),
+        (MAP_XML, ["vulcanus/restful/resp/map.xml"]),
     ],
-    scripts=['aops-vulcanus'],
-    zip_safe=False
+    scripts=["aops-vulcanus"],
+    zip_safe=False,
 )

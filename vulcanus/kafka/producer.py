@@ -28,6 +28,7 @@ class BaseProducer:
     """
     Producer of kafka, split job into msgs
     """
+
     def __init__(self, configuration):
         """
         Init kafka's producer and topic based on config
@@ -39,13 +40,13 @@ class BaseProducer:
         """
         try:
             self.conf = {
-                "value_serializer": lambda v: json.dumps(v).encode('utf-8'),
-                "key_serializer": lambda v: json.dumps(v).encode('utf-8'),
+                "value_serializer": lambda v: json.dumps(v).encode("utf-8"),
+                "key_serializer": lambda v: json.dumps(v).encode("utf-8"),
                 "bootstrap_servers": configuration.producer["KAFKA_SERVER_LIST"],
                 "api_version": configuration.producer["API_VERSION"],
                 "acks": configuration.producer["ACKS"],
                 "retries": configuration.producer["RETRIES"],
-                "retry_backoff_ms": configuration.producer["RETRY_BACKOFF_MS"]
+                "retry_backoff_ms": configuration.producer["RETRY_BACKOFF_MS"],
             }
             self._producer = KafkaProducer(**self.conf)
         except (TypeError, AttributeError, KeyError) as err:
@@ -86,8 +87,12 @@ class BaseProducer:
         Args:
             record_metadata (record_metadata): message's topic, partition and offset
         """
-        LOGGER.debug("Sent successfully. Topic: %s, Partition: %s, Offset: %s",
-                     record_metadata.topic, record_metadata.partition, record_metadata.offset)
+        LOGGER.debug(
+            "Sent successfully. Topic: %s, Partition: %s, Offset: %s",
+            record_metadata.topic,
+            record_metadata.partition,
+            record_metadata.offset,
+        )
 
     @staticmethod
     def _send_failed(excp):
@@ -110,13 +115,10 @@ class BaseProducer:
         """
         if not value:
             return
-        kwargs = {
-            "value": value,
-            "key": key,
-            "partition": partition
-        }
+        kwargs = {"value": value, "key": key, "partition": partition}
         try:
-            self._producer.send(topic, **kwargs)\
-                .add_callback(BaseProducer._send_success).add_errback(BaseProducer._send_failed)
+            self._producer.send(topic, **kwargs).add_callback(BaseProducer._send_success).add_errback(
+                BaseProducer._send_failed
+            )
         except KafkaError as err:
             LOGGER.error(err)

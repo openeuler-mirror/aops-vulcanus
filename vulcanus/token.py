@@ -34,9 +34,7 @@ def get_timedelta(minutes: int = 20) -> int:
     if minutes:
         date_span = date_span + timedelta(minutes=minutes)
 
-    time_span = time.strptime(
-        date_span.strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S"
-    )
+    time_span = time.strptime(date_span.strftime("%Y-%m-%d %H:%M:%S"), "%Y-%m-%d %H:%M:%S")
     return int(time.mktime(time_span))
 
 

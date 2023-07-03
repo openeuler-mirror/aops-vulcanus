@@ -44,15 +44,13 @@ class Config:
 
     def _load_conf(self, config_file):
         if not os.path.exists(config_file):
-            raise RuntimeError(
-                f"Configuration file does not exist: {config_file}")
+            raise RuntimeError(f"Configuration file does not exist: {config_file}")
 
         conf = configparser.RawConfigParser()
         try:
             conf.read(config_file)
         except configparser.ParsingError:
-            raise RuntimeError(
-                f"Failed to load the configuration file: {config_file}")
+            raise RuntimeError(f"Failed to load the configuration file: {config_file}")
 
         return conf
 
@@ -79,8 +77,8 @@ class Config:
                 continue
             if value.isdigit():
                 value = int(value)
-            elif value.lower() in ('true', 'false'):
-                value = (True if value.lower() == 'true' else False)
+            elif value.lower() in ("true", "false"):
+                value = True if value.lower() == "true" else False
             temp_config[key.upper()] = value
 
         if not temp_config:

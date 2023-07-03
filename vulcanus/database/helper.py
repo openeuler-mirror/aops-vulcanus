@@ -55,8 +55,7 @@ def create_database_engine(url, pool_size, pool_recycle):
     Returns:
         engine
     """
-    engine = create_engine(url, pool_size=pool_size,
-                           pool_recycle=pool_recycle, pool_pre_ping=True)
+    engine = create_engine(url, pool_size=pool_size, pool_recycle=pool_recycle, pool_pre_ping=True)
     return engine
 
 
@@ -93,7 +92,7 @@ def timestamp_datetime(value):
     Returns:
         str: formatted time.
     """
-    time_format = '%Y-%m-%dT%H:%M:%S%z'
+    time_format = "%Y-%m-%dT%H:%M:%S%z"
     time_struct = time.localtime(value)
     return time.strftime(time_format, time_struct)
 
@@ -108,7 +107,7 @@ def timestr_unix(time_str):
     Returns:
         int: unix time.
     """
-    time_format_with_hill = '%Y-%m-%dT%H:%M:%S.%f%z'
+    time_format_with_hill = "%Y-%m-%dT%H:%M:%S.%f%z"
 
     time_str = time_str[:26] + time_str[-6:]
     time_format = time.strptime(time_str, time_format_with_hill)
@@ -162,7 +161,7 @@ def sort_and_page(query_result, column, direction, per_page, page):
     if not total_count:
         return query_result, total_page
 
-    direction = desc if direction == 'desc' else asc
+    direction = desc if direction == "desc" else asc
 
     # when column is a sqlalchemy.sql.functions.count object, like func.count(Hots.host_id),
     # it has no boolean value, so "if column:" here is not available
@@ -173,8 +172,7 @@ def sort_and_page(query_result, column, direction, per_page, page):
         page = int(page)
         per_page = int(per_page)
         total_page = math.ceil(total_count / per_page)
-        query_result = query_result.offset(
-            (page - 1) * per_page).limit(per_page)
+        query_result = query_result.offset((page - 1) * per_page).limit(per_page)
 
     return query_result, total_page
 
@@ -190,12 +188,12 @@ def judge_return_code(result, default_stat):
     Returns:
         int: status code
     """
-    if (result.get('succeed_list') or result.get('update_list')):
-        if result.get('fail_list'):
+    if result.get("succeed_list") or result.get("update_list"):
+        if result.get("fail_list"):
             return PARTIAL_SUCCEED
         else:
             return SUCCEED
-    if result.get('fail_list'):
+    if result.get("fail_list"):
         return default_stat
     return SUCCEED
 
@@ -232,9 +230,8 @@ def generate_token(username, expire=3600):
     """
     time_str = str(time.time() + expire)
     time_byte = time_str.encode("utf-8")
-    sha1_tester = hmac.new(username.encode(
-        "utf-8"), time_byte, 'sha1').hexdigest()
-    token = time_str + ':' + sha1_tester
+    sha1_tester = hmac.new(username.encode("utf-8"), time_byte, "sha1").hexdigest()
+    token = time_str + ":" + sha1_tester
     b64_token = base64.urlsafe_b64encode(token.encode("utf-8"))
     return b64_token.decode("utf-8")
 
@@ -249,8 +246,8 @@ def certify_token(username, token):
     Returns(boolean): True if certify token is succeed else False
 
     """
-    token_str = base64.urlsafe_b64decode(token).decode('utf-8')
-    token_list = token_str.split(':')
+    token_str = base64.urlsafe_b64decode(token).decode("utf-8")
+    token_list = token_str.split(":")
     if len(token_list) != 2:
         return False
 
@@ -260,7 +257,7 @@ def certify_token(username, token):
         return False
 
     known_sha1_taster = token_list[1]
-    sha1 = hmac.new(username.encode("utf-8"), ts_str.encode('utf-8'), 'sha1')
+    sha1 = hmac.new(username.encode("utf-8"), ts_str.encode("utf-8"), "sha1")
     calc_sha1_tests = sha1.hexdigest()
     if calc_sha1_tests != known_sha1_taster:
         # token certification failed

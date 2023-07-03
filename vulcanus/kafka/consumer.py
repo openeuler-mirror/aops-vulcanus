@@ -28,6 +28,7 @@ class BaseConsumer:
     """
     Consumer of kafka
     """
+
     def __init__(self, topic, group_id, configuration):
         """
         Init consumer
@@ -42,12 +43,12 @@ class BaseConsumer:
         try:
             self.topic = topic
             self.conf = {
-                "value_deserializer": lambda v: json.loads(v.decode('utf-8')),
-                "key_deserializer": lambda v: json.loads(v.decode('utf-8')),
+                "value_deserializer": lambda v: json.loads(v.decode("utf-8")),
+                "key_deserializer": lambda v: json.loads(v.decode("utf-8")),
                 "bootstrap_servers": configuration.consumer["KAFKA_SERVER_LIST"],
                 "group_id": group_id,
                 "enable_auto_commit": configuration.consumer["ENABLE_AUTO_COMMIT"],
-                "auto_offset_reset": configuration.consumer["AUTO_OFFSET_RESET"]
+                "auto_offset_reset": configuration.consumer["AUTO_OFFSET_RESET"],
             }
             self.timeout_ms = configuration.consumer["TIMEOUT_MS"]
             self.max_records = configuration.consumer["MAX_RECORDS"]

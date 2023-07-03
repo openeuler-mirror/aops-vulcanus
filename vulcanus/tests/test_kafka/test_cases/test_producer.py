@@ -35,7 +35,9 @@ class TestConsumerInit(unittest.TestCase):
         with self.assertRaises(ProducerInitError) as context:
             producer = BaseProducer(configuration)
             producer.close()
-        self.assertTrue("Producer init failed with wrong config file." in str(context.exception))
+        self.assertTrue(
+            "Producer init failed with wrong config file." in str(context.exception)
+        )
 
     def test_none_configfile(self):
         right_config_path = os.path.join(data_path, "none_config.ini")
@@ -43,7 +45,9 @@ class TestConsumerInit(unittest.TestCase):
         with self.assertRaises(ProducerInitError) as context:
             producer = BaseProducer(configuration)
             producer.close()
-        self.assertTrue("Producer init failed with wrong config file." in str(context.exception))
+        self.assertTrue(
+            "Producer init failed with wrong config file." in str(context.exception)
+        )
 
     def test_right_config(self):
         right_config_path = os.path.join(data_path, "right_producer_config.ini")

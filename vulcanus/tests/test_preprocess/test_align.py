@@ -21,9 +21,8 @@ from vulcanus.preprocessing.alignment import *
 
 
 class TestAlign(unittest.TestCase):
-
     def test_get_primary_data(self):
-        data = {"key1":[[1, 5], [2, 4]], "key2":[[1, 4]]}
+        data = {"key1": [[1, 5], [2, 4]], "key2": [[1, 4]]}
         primary = get_primary_data(data)
         self.assertEqual(primary, "key2")
 
@@ -67,11 +66,7 @@ class TestAlign(unittest.TestCase):
     def test_align(self):
         period = 5
         time_range = [1, 12]
-        data = {
-            "key1": [[1, 3], [3, 5], [7, 1], [15, 2]]
-        }
+        data = {"key1": [[1, 3], [3, 5], [7, 1], [15, 2]]}
         res = align(period, time_range, data)
-        expected_res = {
-            "key1": [[1, 3], [6, 1], [11, 2]]
-        }
+        expected_res = {"key1": [[1, 3], [6, 1], [11, 2]]}
         self.assertEqual(res, expected_res)

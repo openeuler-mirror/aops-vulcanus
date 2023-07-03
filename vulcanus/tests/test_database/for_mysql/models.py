@@ -22,6 +22,7 @@ from sqlalchemy.sql.sqltypes import Integer, String
 
 Base = declarative_base()
 
+
 class Test(Base):
     __tablename__ = "test"
     id = Column(Integer, primary_key=True, autoincrement=True)

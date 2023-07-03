@@ -32,14 +32,16 @@ from vulcanus.restful.resp import make_response, state
 from vulcanus.token import decode_token
 from vulcanus.conf import configuration
 from vulcanus.database.proxy import ElasticsearchProxy, PromDbProxy, MysqlProxy
+from vulcanus.conf.constant import TIMEOUT
 
 
 class BaseResponse(Resource):
     """
     Restful base class, offer a basic function that can handle the request.
     """
+
     @classmethod
-    def get_response(cls, method, url, data, header=None, timeout=600):
+    def get_response(cls, method, url, data, header=None, timeout=TIMEOUT):
         """
         send a request and get the response
 
@@ -60,11 +62,9 @@ class BaseResponse(Resource):
 
         try:
             if header:
-                response = requests.request(
-                    method=method, url=url, json=data, headers=header, timeout=timeout)
+                response = requests.request(method=method, url=url, json=data, headers=header, timeout=timeout)
             else:
-                response = requests.request(
-                    method=method, url=url, json=data, timeout=timeout)
+                response = requests.request(method=method, url=url, json=data, timeout=timeout)
             if response.status_code != 200:
                 result = make_response(label=state.SERVER_ERROR)
             else:
@@ -143,7 +143,7 @@ class BaseResponse(Resource):
         if not cache_token or cache_token != token:
             return state.TOKEN_ERROR
 
-        args['username'] = verify_info["key"]
+        args["username"] = verify_info["key"]
         return state.SUCCEED
 
     @classmethod
@@ -164,20 +164,22 @@ class BaseResponse(Resource):
 
         if debug:
             LOGGER.debug(request.base_url)
-            LOGGER.debug("Interface %s received args: %s",
-                         request.endpoint, args)
+            LOGGER.debug("Interface %s received args: %s", request.endpoint, args)
 
-        access_token = request.headers.get('access_token')
+        access_token = request.headers.get("access_token")
         verify_res = state.SUCCEED
         if schema:
             verify_res = cls.verify_args(args, schema)
             if verify_res != state.SUCCEED:
                 return args, verify_res
-        exempt_authentication = request.headers.get('exempt_authentication')
+        exempt_authentication = request.headers.get("exempt_authentication")
         if exempt_authentication:
-            status = state.SUCCEED if exempt_authentication == configuration.individuation.get(
-                "EXEMPT_AUTHENTICATION") else state.TOKEN_ERROR
-            args["username"] = request.headers.get('local_account')
+            status = (
+                state.SUCCEED
+                if exempt_authentication == configuration.individuation.get("EXEMPT_AUTHENTICATION")
+                else state.TOKEN_ERROR
+            )
+            args["username"] = request.headers.get("local_account")
             args["timed"] = True
             return args, status
 
@@ -187,7 +189,7 @@ class BaseResponse(Resource):
         return args, verify_res
 
     @classmethod
-    def verify_upload_request(cls, save_path, file_key='file'):
+    def verify_upload_request(cls, save_path, file_key="file"):
         """
         verify upload request's token, save file into save_path/username
         Args:
@@ -203,7 +205,7 @@ class BaseResponse(Resource):
         LOGGER.debug(request.base_url)
         LOGGER.debug("Interface %s received args: %s", request.endpoint, args)
 
-        access_token = request.headers.get('access_token')
+        access_token = request.headers.get("access_token")
         if args is None:
             args = {}
         verify_res = cls.verify_token(access_token, args)
@@ -217,7 +219,7 @@ class BaseResponse(Resource):
 
             username = args["username"]
             filename = secure_filename(file.filename)
-            file_name = str(uuid.uuid4()) + '.' + filename.rsplit('.', 1)[-1]
+            file_name = str(uuid.uuid4()) + "." + filename.rsplit(".", 1)[-1]
 
             if not os.path.exists(os.path.join(save_path, username)):
                 os.makedirs(os.path.join(save_path, username))
@@ -250,8 +252,7 @@ class BaseResponse(Resource):
         def verify_handle(api_view):
             @wraps(api_view)
             def wrapper(self, **kwargs):
-                params, status = self.verify_request(
-                    schema, need_token=token, debug=debug)
+                params, status = self.verify_request(schema, need_token=token, debug=debug)
                 if status != state.SUCCEED:
                     return self.response(code=status)
 
@@ -272,4 +273,5 @@ class BaseResponse(Resource):
                     return self.response(code=state.DATABASE_CONNECT_ERROR)
 
             return wrapper
+
         return verify_handle

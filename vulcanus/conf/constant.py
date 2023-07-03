@@ -17,13 +17,13 @@ Description: config constant
 """
 import os
 
-BASE_CONFIG_PATH = '/etc/aops'
+BASE_CONFIG_PATH = "/etc/aops"
 
 # path of global configuration
-SYSTEM_CONFIG_PATH = os.path.join(BASE_CONFIG_PATH, 'system.ini')
+SYSTEM_CONFIG_PATH = os.path.join(BASE_CONFIG_PATH, "system.ini")
 
 # path of proxy configuration
-MANAGER_CONFIG_PATH = os.path.join(BASE_CONFIG_PATH, 'manager.ini')
+MANAGER_CONFIG_PATH = os.path.join(BASE_CONFIG_PATH, "manager.ini")
 
 
 TASK_INDEX = "ansible_task"
@@ -44,33 +44,33 @@ REFRESH_TOKEN = "/manage/account/refreshtoken"
 UPDATE_HOST = "/manage/host/update"
 
 QUERY_HOST_DETAIL = "/manage/host/info/query"
-HOST_SCENE_GET = '/manage/host/scene/get'
+HOST_SCENE_GET = "/manage/host/scene/get"
 
 ADD_GROUP = "/manage/host/group/add"
 DELETE_GROUP = "/manage/host/group/delete"
 GET_GROUP = "/manage/host/group/get"
 
-COLLECT_CONFIG = '/manage/config/collect'
+COLLECT_CONFIG = "/manage/config/collect"
 
 USER_LOGIN = "/manage/account/login"
 LOGOUT = "/manage/account/logout"
-CHANGE_PASSWORD = '/manage/account/change'
-ADD_USER = '/manage/account/add'
+CHANGE_PASSWORD = "/manage/account/change"
+ADD_USER = "/manage/account/add"
 GITEE_AUTH_LOGIN = "/manage/account/gitee/login"
 
-AGENT_PLUGIN_INFO = '/manage/agent/plugin/info'
-AGENT_PLUGIN_SET = '/manage/agent/plugin/set'
-AGENT_METRIC_SET = '/manage/agent/metric/set'
+AGENT_PLUGIN_INFO = "/manage/agent/plugin/info"
+AGENT_PLUGIN_SET = "/manage/agent/plugin/set"
+AGENT_METRIC_SET = "/manage/agent/metric/set"
 
-EXECUTE_REPO_SET = '/manage/vulnerability/repo/set'
-EXECUTE_CVE_FIX = '/manage/vulnerability/cve/fix'
-EXECUTE_CVE_SCAN = '/manage/vulnerability/cve/scan'
+EXECUTE_REPO_SET = "/manage/vulnerability/repo/set"
+EXECUTE_CVE_FIX = "/manage/vulnerability/cve/fix"
+EXECUTE_CVE_SCAN = "/manage/vulnerability/cve/scan"
 EXECUTE_CVE_ROLLBACK = "/manage/vulnerability/cve/rollback"
 
 # metric config
-QUERY_METRIC_NAMES = '/manage/host/metric/names'
-QUERY_METRIC_DATA = '/manage/host/metric/data'
-QUERY_METRIC_LIST = '/manage/host/metric/list'
+QUERY_METRIC_NAMES = "/manage/host/metric/names"
+QUERY_METRIC_DATA = "/manage/host/metric/data"
+QUERY_METRIC_LIST = "/manage/host/metric/list"
 
 # auth login
 GITEE_OAUTH = "https://gitee.com/oauth/authorize"
@@ -81,3 +81,5 @@ GITEE_USERINFO = "https://gitee.com/api/v5/user"
 REFRESH_TOKEN_EXP = 1440
 
 PRIVATE_INDIVIDUATION_CONFIG = "/etc/aops/.aops-private-config.ini"
+
+TIMEOUT = 600

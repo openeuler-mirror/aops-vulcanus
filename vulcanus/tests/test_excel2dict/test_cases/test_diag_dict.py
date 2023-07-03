@@ -51,6 +51,7 @@ class TestWrongTree(unittest.TestCase):
     """
     Test if some wrong format can be detected during the conversion
     """
+
     def test_wrong_tree(self):
         """
         Test if some wrong format can be detected during the conversion

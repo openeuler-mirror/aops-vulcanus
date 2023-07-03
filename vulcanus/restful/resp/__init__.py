@@ -31,7 +31,7 @@ def make_response(label: str, message: str = None, data=None):
             "label": "Scuueed",
             "code": 200,
             "message": "operation succeed"
-            "data": 
+            "data":
         }
     """
     response = Response(label=state.SUCCEED)

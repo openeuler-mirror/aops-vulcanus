@@ -48,13 +48,13 @@ def validate(verifier, data, load=False):
 
 class ValidateRules:
     """
-        Custom validation rules
+    Custom validation rules
     """
 
     @staticmethod
     def space_character_check(string: str) -> None:
         """
-            one of validation rules for string, no spaces are allowed at the beginning or end.
+        one of validation rules for string, no spaces are allowed at the beginning or end.
         """
         if len(string.strip()) != len(string):
             raise ValidationError("there may be space character exists at the beginning or end!")
@@ -62,7 +62,7 @@ class ValidateRules:
     @staticmethod
     def account_name_check(string: str) -> None:
         """
-            validation rules for username, which only contains string or number
+        validation rules for username, which only contains string or number
         """
         if not re.findall("[a-zA-Z0-9]{5,20}", string):
             raise ValidationError("username should only contains string or number, between 5 and 20 characters!")
@@ -70,7 +70,7 @@ class ValidateRules:
     @staticmethod
     def account_password_check(string: str) -> None:
         """
-            validation rules for password, which only contains string or number
+        validation rules for password, which only contains string or number
         """
         if not re.findall("[a-zA-Z0-9]{6,20}", string):
             raise ValidationError("password should only contains string or number, between 6 and 20 characters!!")
@@ -78,7 +78,8 @@ class ValidateRules:
 
 class PaginationSchema(Schema):
     """
-        filter schema of paging parameter
+    filter schema of paging parameter
     """
+
     page = fields.Integer(required=False, validate=lambda s: 10**6 > s > 0)
     per_page = fields.Integer(required=False, validate=lambda s: 10**3 > s > 0)

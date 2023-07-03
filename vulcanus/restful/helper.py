@@ -49,9 +49,7 @@ def make_manager_url(route):
     manager_ip = configuration.manager.get("IP")  # pylint: disable=E1101
     manager_port = configuration.manager.get("PORT")  # pylint: disable=E1101
     manager_url = URL_FORMAT % (manager_ip, manager_port, route)
-    manager_header = {
-        "Content-Type": "application/json; charset=UTF-8"
-    }
+    manager_header = {"Content-Type": "application/json; charset=UTF-8"}
     return manager_url, manager_header
 
 
@@ -68,9 +66,7 @@ def make_diag_url(route):
     diag_ip = configuration.diag_scheduler.get("IP")  # pylint: disable=E1101
     diag_port = configuration.diag_scheduler.get("PORT")  # pylint: disable=E1101
     diag_url = URL_FORMAT % (diag_ip, diag_port, route)
-    diag_header = {
-        "Content-Type": "application/json; charset=UTF-8"
-    }
+    diag_header = {"Content-Type": "application/json; charset=UTF-8"}
     return diag_url, diag_header
 
 
@@ -85,7 +81,5 @@ def make_check_url(route):
     check_ip = configuration.check_scheduler.get("IP")  # pylint: disable=E1101
     check_port = configuration.check_scheduler.get("PORT")  # pylint: disable=E1101
     check_url = URL_FORMAT % (check_ip, check_port, route)
-    check_header = {
-        "Content-Type": "application/json; charset=UTF-8"
-    }
+    check_header = {"Content-Type": "application/json; charset=UTF-8"}
     return check_url, check_header

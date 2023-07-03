@@ -24,8 +24,13 @@ from sqlalchemy.orm import sessionmaker
 from datetime import datetime
 from abc import ABC, abstractmethod
 from urllib3.exceptions import LocationValueError
-from elasticsearch import Elasticsearch, ElasticsearchException, helpers, TransportError, \
-    NotFoundError
+from elasticsearch import (
+    Elasticsearch,
+    ElasticsearchException,
+    helpers,
+    TransportError,
+    NotFoundError,
+)
 from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
 from redis import Redis, ConnectionPool
 from vulcanus.log.log import LOGGER
@@ -61,10 +66,11 @@ class MysqlProxy(DataBaseProxy):
         """
         self.session = None
         engine_url = make_mysql_engine_url(configuration)
-        self.engine = create_database_engine(engine_url,
-                                             configuration.mysql.get(
-                                                 "POOL_SIZE"),  # pylint: disable=E1101
-                                             configuration.mysql.get("POOL_RECYCLE"))
+        self.engine = create_database_engine(
+            engine_url,
+            configuration.mysql.get("POOL_SIZE"),  # pylint: disable=E1101
+            configuration.mysql.get("POOL_RECYCLE"),
+        )
 
     def _create_session(self):
         session = sessionmaker()
@@ -128,8 +134,8 @@ class MysqlProxy(DataBaseProxy):
         """
         if isinstance(exc_type, (AttributeError)):
             raise SQLAlchemyError(exc_val)
-
-        self.session.close()
+        if self.session:
+            self.session.close()
 
     def insert(self, table, data):
         """
@@ -206,8 +212,8 @@ class ElasticsearchProxy(DataBaseProxy):
             host (str)
             port (int)
         """
-        self._host = host or configuration.elasticsearch.get('IP')
-        self._port = port or configuration.elasticsearch.get('PORT')
+        self._host = host or configuration.elasticsearch.get("IP")
+        self._port = port or configuration.elasticsearch.get("PORT")
         self.connected = False
         self._es_db = None
 
@@ -219,8 +225,7 @@ class ElasticsearchProxy(DataBaseProxy):
             bool
         """
         try:
-            self._es_db = Elasticsearch(
-                [{"host": self._host, "port": self._port, "timeout": 150}])
+            self._es_db = Elasticsearch([{"host": self._host, "port": self._port, "timeout": 150}])
             self._es_db.info()
             self.connected = True
         except (LocationValueError, ElasticsearchException):
@@ -259,9 +264,7 @@ class ElasticsearchProxy(DataBaseProxy):
         """
         result = []
         try:
-            result = self._es_db.search(index=index,  # pylint: disable=E1123
-                                        body=body,
-                                        _source=source)
+            result = self._es_db.search(index=index, body=body, _source=source)  # pylint: disable=E1123
             return True, result
 
         except NotFoundError as error:
@@ -288,10 +291,15 @@ class ElasticsearchProxy(DataBaseProxy):
         result = []
         try:
             temp = helpers.scan(
-                client=self._es_db, index=index, query=body,
-                scroll='5m', timeout='1m', _source=source)
+                client=self._es_db,
+                index=index,
+                query=body,
+                scroll="5m",
+                timeout="1m",
+                _source=source,
+            )
             for res in temp:
-                result.append(res['_source'])
+                result.append(res["_source"])
             return True, result
 
         except NotFoundError as error:
@@ -355,10 +363,7 @@ class ElasticsearchProxy(DataBaseProxy):
             bool
         """
         try:
-            self._es_db.index(index=index,
-                              doc_type=doc_type,
-                              body=body,
-                              id=document_id)
+            self._es_db.index(index=index, doc_type=doc_type, body=body, id=document_id)
             return True
         except ElasticsearchException as error:
             LOGGER.error(error)
@@ -378,9 +383,7 @@ class ElasticsearchProxy(DataBaseProxy):
             bool/None: the document exist or not
         """
         try:
-            exist_flag = self._es_db.exists(index=index,
-                                            doc_type=doc_type,
-                                            id=document_id)
+            exist_flag = self._es_db.exists(index=index, doc_type=doc_type, id=document_id)
             return True, exist_flag
         except ElasticsearchException as error:
             LOGGER.error(error)
@@ -417,9 +420,7 @@ class ElasticsearchProxy(DataBaseProxy):
         """
         action = []
         for item in data:
-            action.append({
-                "_index": index,
-                "_source": item})
+            action.append({"_index": index, "_source": item})
 
         return self._bulk(action)
 
@@ -438,12 +439,7 @@ class ElasticsearchProxy(DataBaseProxy):
         for item in data:
             _id = item.get("_id")
             doc = item.get("doc")
-            action.append({
-                "_op_type": "update",
-                "_index": index,
-                "_id": _id,
-                "doc": doc
-            })
+            action.append({"_op_type": "update", "_index": index, "_id": _id, "doc": doc})
 
         return self._bulk(action)
 
@@ -491,8 +487,7 @@ class ElasticsearchProxy(DataBaseProxy):
             kwargs(dict)
         """
         try:
-            self._es_db.indices.put_settings(
-                index='_all', body={"index": kwargs})
+            self._es_db.indices.put_settings(index="_all", body={"index": kwargs})
         except ElasticsearchException:
             LOGGER.error("update elasticsearch indices fail")
 
@@ -512,8 +507,8 @@ class ElasticsearchProxy(DataBaseProxy):
 
         total_page = 1
 
-        page = data.get('page')
-        per_page = data.get('per_page')
+        page = data.get("page")
+        per_page = data.get("per_page")
         if page and per_page:
             page = int(page)
             per_page = int(per_page)
@@ -521,11 +516,10 @@ class ElasticsearchProxy(DataBaseProxy):
             start = (page - 1) * per_page
             body.update({"from": start, "size": per_page})
 
-        sort = data.get('sort')
-        direction = data.get('direction') or 'asc'
+        sort = data.get("sort")
+        direction = data.get("direction") or "asc"
         if sort and direction:
-            body.update(
-                {"sort": [{sort: {"order": direction, "unmapped_type": "keyword"}}]})
+            body.update({"sort": [{sort: {"order": direction, "unmapped_type": "keyword"}}]})
 
         return total_page
 
@@ -540,16 +534,9 @@ class ElasticsearchProxy(DataBaseProxy):
         Returns:
             dict
         """
-        query_body = {
-            "query": {
-                "bool": {
-                    "must": []
-                }
-            }
-        }
+        query_body = {"query": {"bool": {"must": []}}}
         if data is not None:
-            query_body["query"]["bool"]["must"].append(
-                {"term": {"username": data.get("username")}})
+            query_body["query"]["bool"]["must"].append({"term": {"username": data.get("username")}})
         return query_body
 
 
@@ -568,8 +555,8 @@ class PromDbProxy(DataBaseProxy):
             port (int)
         """
         DataBaseProxy.__init__(self)
-        self._host = host or configuration.prometheus.get('IP')
-        self._port = port or configuration.prometheus.get('PORT')
+        self._host = host or configuration.prometheus.get("IP")
+        self._port = port or configuration.prometheus.get("PORT")
         self.connected = False
         self._prom = None
 
@@ -607,8 +594,7 @@ class PromDbProxy(DataBaseProxy):
         # metric of a host's all exporters
         # e.g. metric "up" of localhost: up{instance=127.0.0.1\\d{1,5}}
         host_condition = 'instance=~"%s:\\\\d{1,5}"' % host
-        combined_condition = PromDbProxy._combine_condition(
-            label_config, host_condition)
+        combined_condition = PromDbProxy._combine_condition(label_config, host_condition)
 
         metric_with_condition = metric + combined_condition
 
@@ -620,8 +606,13 @@ class PromDbProxy(DataBaseProxy):
             )
 
             if not data:
-                LOGGER.warning("Query result is empty. Exporter of host %s doesn't record the "
-                               "metric '%s' during [%s, %s].", host, metric, start_time, end_time)
+                LOGGER.warning(
+                    "Query result is empty. Exporter of host %s doesn't record the " "metric '%s' during [%s, %s].",
+                    host,
+                    metric,
+                    start_time,
+                    end_time,
+                )
 
             return True, data
 
@@ -649,9 +640,9 @@ class PromDbProxy(DataBaseProxy):
 
         if label_config:
             for key, value in label_config.items():
-                condition_list.append(str(key) + '=' + '"' + value + '"')
+                condition_list.append(str(key) + "=" + '"' + value + '"')
 
-        combined_condition = '{' + ",".join(condition_list) + '}'
+        combined_condition = "{" + ",".join(condition_list) + "}"
         return combined_condition
 
 
@@ -659,6 +650,7 @@ class RedisProxy(DataBaseProxy):
     """
     Proxy of redis database
     """
+
     redis_connect = None
 
     def __init__(self, configuration, host=None, port=None):
@@ -671,18 +663,17 @@ class RedisProxy(DataBaseProxy):
             port (int)
         """
         DataBaseProxy.__init__(self)
-        self._host = host or configuration.redis.get('IP')
-        self._port = port or configuration.redis.get('PORT')
+        self._host = host or configuration.redis.get("IP")
+        self._port = port or configuration.redis.get("PORT")
 
     def connect(self):
         """
         Make a connect to database connection pool
         """
         try:
-            RedisProxy.redis_connect = Redis(connection_pool=ConnectionPool(
-                host=self._host,
-                port=self._port,
-                decode_responses=True))
+            RedisProxy.redis_connect = Redis(
+                connection_pool=ConnectionPool(host=self._host, port=self._port, decode_responses=True)
+            )
             RedisProxy.redis_connect.ping()
         except redis.ConnectionError:
             raise redis.ConnectionError("Redis service connection error")

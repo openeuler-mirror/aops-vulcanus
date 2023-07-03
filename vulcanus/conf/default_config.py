@@ -19,10 +19,10 @@ import os
 
 # log configuration
 log = {
-    "LOG_DIR": os.path.join('/', 'var', 'log', 'aops'),
-    "LOG_LEVEL": 'INFO',
+    "LOG_DIR": os.path.join("/", "var", "log", "aops"),
+    "LOG_LEVEL": "INFO",
     "MAX_BYTES": 31457280,
-    "BACKUP_COUNT": 30
+    "BACKUP_COUNT": 30,
 }
 
 individuation = {
@@ -30,7 +30,7 @@ individuation = {
     "GITEE_CLIENT_SECRET": "",
     "REDIRECT_URL": "",
     "EXEMPT_AUTHENTICATION": "",
-    "EMAIL_STMP": ""
+    "EMAIL_STMP": "",
 }
 
 email = {
@@ -39,5 +39,5 @@ email = {
     "SENDER": "",
     "AUTHORIZATION_CODE": "",
     "SMTP_SSL": False,
-    "ENABLED": False
+    "ENABLED": False,
 }
