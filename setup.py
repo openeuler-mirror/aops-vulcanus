@@ -28,6 +28,8 @@ setup(
         "Werkzeug",
         "Flask_RESTful",
         "Flask",
+        "Flask-APScheduler",
+        "apscheduler"
     ],
     author="cmd-lsw-yyy-zyc",
     data_files=[
