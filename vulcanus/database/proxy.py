@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # ******************************************************************************
-# Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2021-2023. All rights reserved.
 # licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
@@ -15,44 +15,58 @@ Time:
 Author:
 Description: Database proxy
 """
+from functools import wraps
 import math
-import redis
-import sqlalchemy
-from sqlalchemy.exc import SQLAlchemyError
-from sqlalchemy.exc import DisconnectionError
-from sqlalchemy.orm import sessionmaker
 from datetime import datetime
-from abc import ABC, abstractmethod
 from urllib3.exceptions import LocationValueError
-from elasticsearch import (
-    Elasticsearch,
-    ElasticsearchException,
-    helpers,
-    TransportError,
-    NotFoundError,
-)
+
+import sqlalchemy
+from sqlalchemy.exc import SQLAlchemyError, DisconnectionError
+from sqlalchemy.orm import sessionmaker
+from elasticsearch import Elasticsearch, ElasticsearchException, helpers, TransportError, NotFoundError
 from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
+import redis
 from redis import Redis, ConnectionPool
 from vulcanus.log.log import LOGGER
-from vulcanus.database.helper import create_database_engine
-from vulcanus.database.helper import make_mysql_engine_url
+from vulcanus.restful.resp import state
+from vulcanus.conf import configuration
+from vulcanus.common import singleton
+from vulcanus.exceptions import DatabaseConnectionFailed, DatabaseError
 
 
-class DataBaseProxy(ABC):
+def connect_database(status=state.DATABASE_CONNECT_ERROR, return_value=None):
+    """
+    Database connection status decorator
+
+    Args:
+        status: Unified operation response code
+        return_value: Data to be returned
+    """
+
+    def verify_connect(func):
+        @wraps(func)
+        def wrapper(self, **kwargs):
+            try:
+                return func(self, **kwargs)
+            except DatabaseConnectionFailed as error:
+                LOGGER.error(error)
+                if return_value:
+                    return status, return_value
+                return status
+
+        return wrapper
+
+    return verify_connect
+
+
+class DataBaseProxy:
     """
     Base proxy
     """
 
-    def __init__(self):
-        """
-        init
-        """
-
-    @abstractmethod
-    def connect(self):
-        """
-        proxy should implement connect function
-        """
+    @classmethod
+    def connect(cls):
+        pass
 
 
 class MysqlProxy(DataBaseProxy):
@@ -60,25 +74,27 @@ class MysqlProxy(DataBaseProxy):
     Proxy of mysql
     """
 
-    def __init__(self, configuration):
+    # Database linking engine，global initialization before using engin e.g
+    # MysqlProxy.engine=create_database_engine(make_mysql_engine_url(settings), pool_size, pool_recycle)
+
+    engine = None
+
+    def __init__(self):
         """
         Class instance initialization
         """
         self.session = None
-        engine_url = make_mysql_engine_url(configuration)
-        self.engine = create_database_engine(
-            engine_url,
-            configuration.mysql.get("POOL_SIZE"),  # pylint: disable=E1101
-            configuration.mysql.get("POOL_RECYCLE"),
-        )
+        if not MysqlProxy.engine:
+            raise DatabaseError("Engine is not initialized")
 
     def _create_session(self):
         session = sessionmaker()
         try:
-            session.configure(bind=self.engine)
+            session.configure(bind=MysqlProxy.engine)
             self.session = session()
         except (DisconnectionError, sqlalchemy.exc.SQLAlchemyError):
-            raise sqlalchemy.exc.SQLAlchemyError("Connection error")
+            LOGGER.error("Mysql connection failed.")
+            raise DatabaseConnectionFailed("Mysql connection failed.")
 
     def connect(self):  # pylint: disable=W0221
         """
@@ -99,14 +115,8 @@ class MysqlProxy(DataBaseProxy):
         return True
 
     def __del__(self):
-        self.session.close()
-
-    def create_engine(self):
-        """
-        Create related database engine connections
-        """
-        self._create_session()
-        return self
+        if self.session:
+            self.session.close()
 
     def __enter__(self):
         """
@@ -119,8 +129,8 @@ class MysqlProxy(DataBaseProxy):
 
         """
 
-        database_engine = self.create_engine()
-        return database_engine
+        self._create_session()
+        return self
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         """
@@ -134,6 +144,7 @@ class MysqlProxy(DataBaseProxy):
         """
         if isinstance(exc_type, (AttributeError)):
             raise SQLAlchemyError(exc_val)
+
         if self.session:
             self.session.close()
 
@@ -203,51 +214,25 @@ class ElasticsearchProxy(DataBaseProxy):
     Elasticsearch proxy
     """
 
-    def __init__(self, configuration, host=None, port=None):
+    # Class attributes of es,stores an instance of es,you need to initialize ElasticsearchProxy before using es query
+    _es_db = None
+
+    def __init__(self, host=None, port=None):
         """
         Instance initialization
 
         Args:
-            configuration (Config)
             host (str)
             port (int)
         """
-        self._host = host or configuration.elasticsearch.get("IP")
-        self._port = port or configuration.elasticsearch.get("PORT")
-        self.connected = False
-        self._es_db = None
-
-    def connect(self):
-        """
-        Connect to elasticsearch server
-
-        Returns:
-            bool
-        """
-        try:
-            self._es_db = Elasticsearch([{"host": self._host, "port": self._port, "timeout": 150}])
-            self._es_db.info()
-            self.connected = True
-        except (LocationValueError, ElasticsearchException):
-            LOGGER.error("Elasticsearch connection failed.")
-
-        return self.connected
-
-    def __del__(self):
-        """
-        Close connection
-        """
-        self.close()
-
-    def close(self):
-        """
-        Close db connect
-        """
-        if not self.connected:
-            return
-
-        if self._es_db:
-            self._es_db.close()
+        self._host = host or configuration.elasticsearch.get('IP')
+        self._port = port or configuration.elasticsearch.get('PORT')
+        if not ElasticsearchProxy._es_db:
+            try:
+                ElasticsearchProxy._es_db = Elasticsearch([{"host": self._host, "port": self._port, "timeout": 60}])
+            except (LocationValueError, ElasticsearchException):
+                LOGGER.error("Elasticsearch connection failed.")
+                raise DatabaseConnectionFailed("Elasticsearch connection failed.")
 
     def query(self, index, body, source=True):
         """
@@ -264,7 +249,7 @@ class ElasticsearchProxy(DataBaseProxy):
         """
         result = []
         try:
-            result = self._es_db.search(index=index, body=body, _source=source)  # pylint: disable=E1123
+            result = self._es_db.search(index=index, body=body, _source=source)
             return True, result
 
         except NotFoundError as error:
@@ -290,16 +275,9 @@ class ElasticsearchProxy(DataBaseProxy):
         """
         result = []
         try:
-            temp = helpers.scan(
-                client=self._es_db,
-                index=index,
-                query=body,
-                scroll="5m",
-                timeout="1m",
-                _source=source,
-            )
+            temp = helpers.scan(client=self._es_db, index=index, query=body, scroll='5m', timeout='1m', _source=source)
             for res in temp:
-                result.append(res["_source"])
+                result.append(res['_source'])
             return True, result
 
         except NotFoundError as error:
@@ -487,7 +465,7 @@ class ElasticsearchProxy(DataBaseProxy):
             kwargs(dict)
         """
         try:
-            self._es_db.indices.put_settings(index="_all", body={"index": kwargs})
+            self._es_db.indices.put_settings(index='_all', body={"index": kwargs})
         except ElasticsearchException:
             LOGGER.error("update elasticsearch indices fail")
 
@@ -507,8 +485,8 @@ class ElasticsearchProxy(DataBaseProxy):
 
         total_page = 1
 
-        page = data.get("page")
-        per_page = data.get("per_page")
+        page = data.get('page')
+        per_page = data.get('per_page')
         if page and per_page:
             page = int(page)
             per_page = int(per_page)
@@ -516,8 +494,8 @@ class ElasticsearchProxy(DataBaseProxy):
             start = (page - 1) * per_page
             body.update({"from": start, "size": per_page})
 
-        sort = data.get("sort")
-        direction = data.get("direction") or "asc"
+        sort = data.get('sort')
+        direction = data.get('direction') or 'asc'
         if sort and direction:
             body.update({"sort": [{sort: {"order": direction, "unmapped_type": "keyword"}}]})
 
@@ -545,36 +523,30 @@ class PromDbProxy(DataBaseProxy):
     Proxy of prometheus time series database
     """
 
-    def __init__(self, configuration, host=None, port=None):
+    def __init__(self, host=None, port=None):
         """
         Init Prometheus time series database proxy
 
         Args:
-            configuration (Config)
             host (str)
             port (int)
         """
-        DataBaseProxy.__init__(self)
-        self._host = host or configuration.prometheus.get("IP")
-        self._port = port or configuration.prometheus.get("PORT")
-        self.connected = False
-        self._prom = None
+        self._host = host or configuration.prometheus.get('IP')
+        self._port = port or configuration.prometheus.get('PORT')
+        self._prom = PrometheusConnect(url="http://%s:%s" % (self._host, self._port), disable_ssl=True)
+        if not self.connected:
+            raise DatabaseConnectionFailed("Promethus connection failed.")
 
-    def connect(self):
+    @property
+    def connected(self):
         """
         Make a connect to database connection pool
 
         Returns:
             bool: connect succeed or fail
         """
-        url = "http://%s:%s" % (self._host, self._port)
 
-        self._prom = PrometheusConnect(url=url, disable_ssl=True)
-        self.connected = self._prom.check_prometheus_connection()
-        return self.connected
-
-    def close(self):
-        pass
+        return self._prom.check_prometheus_connection()
 
     def query(self, host, time_range, metric, label_config=None):
         """
@@ -646,6 +618,7 @@ class PromDbProxy(DataBaseProxy):
         return combined_condition
 
 
+@singleton
 class RedisProxy(DataBaseProxy):
     """
     Proxy of redis database
@@ -653,18 +626,17 @@ class RedisProxy(DataBaseProxy):
 
     redis_connect = None
 
-    def __init__(self, configuration, host=None, port=None):
+    def __init__(self, host=None, port=None):
         """
         Init redis database proxy
 
         Args:
-            configuration (Config)
             host (str)
             port (int)
         """
-        DataBaseProxy.__init__(self)
-        self._host = host or configuration.redis.get("IP")
-        self._port = port or configuration.redis.get("PORT")
+        self._host = host or configuration.redis.get('IP')
+        self._port = port or configuration.redis.get('PORT')
+        self.connect()
 
     def connect(self):
         """
@@ -676,7 +648,7 @@ class RedisProxy(DataBaseProxy):
             )
             RedisProxy.redis_connect.ping()
         except redis.ConnectionError:
-            raise redis.ConnectionError("Redis service connection error")
+            raise DatabaseConnectionFailed("Redis service connection error")
 
     def close(self):
         """
