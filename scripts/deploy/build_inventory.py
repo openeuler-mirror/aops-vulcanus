@@ -16,94 +16,64 @@ Author: YangYunYi
 Description: build inventory
 """
 
-import os
+import pandas as pd
 import yaml
-import pandas
+from pathlib import Path
 
-CURRENT_PATH = os.path.dirname(os.path.abspath(__file__))
-CONF_PATH = os.path.join(CURRENT_PATH, "conf")
-HOST_INFO_FILE = os.path.join(CONF_PATH, "import_host.xls")
-INVENTORY_CONFIG_FILE = os.path.join(CONF_PATH, "inventory_config.yml")
-OUTPUT_DIR = "output"
+CURRENT_PATH = Path(__file__).parent
+CONF_PATH = CURRENT_PATH / "conf"
+HOST_INFO_FILE = CONF_PATH / "import_host.xls"
+INVENTORY_CONFIG_FILE = CONF_PATH / "inventory_config.yml"
+OUTPUT_DIR = CURRENT_PATH / "output"
 
 
-def make_dir(dir_path: str) -> None:
+def parse_host_info(file_path: Path, component_list: list) -> dict:
     """
-        Make dir if not exist
+    Parse host info from the Excel file and return a dictionary.
 
     Args:
-        dir_path(str):
+        file_path (Path): Path to the Excel file containing host information.
+        component_list (list): List of components to install.
 
     Returns:
-        None
+        component_dict_list (dict): Component info as a dictionary.
     """
-    if not dir_path:
-        raise ValueError("dir_path is None")
-
-    if not os.path.exists(dir_path):
-        os.makedirs(dir_path)
-
-
-def parse_all_dict(file_name: str, component_list: list) -> dict:
-    """
-        Parse dict of host info
-
-    Args:
-        file_name(str): file name of excel
-        component_list(list): component list to install
-
-    Returns:
-        component_dict_list(dict): component info
-    """
-    component_dict_list = dict()
+    component_dict_list = {}
     for component in component_list:
-        component_sheet = pandas.read_excel(file_name, sheet_name=component)
-        component_dict_list["{}_hosts".format(component)] = {}
-        component_dict_list["{}_hosts".format(component)]["hosts"] = {}
-        key_list = component_sheet.columns.tolist()
-        for index, row in component_sheet.iterrows():
-            component_dict_list["{}_hosts".format(component)]["hosts"][
-                row.host_name
-            ] = dict()
-            for key in key_list:
-                if key == "host_name":
-                    continue
-                component_dict_list["{}_hosts".format(component)]["hosts"][
-                    row.host_name
-                ][key] = getattr(row, key)
-                component_dict_list["{}_hosts".format(component)]["hosts"][
-                    row.host_name
-                ]["ansible_python_interpreter"] = "/usr/bin/python3"
+        component_sheet = pd.read_excel(file_path, sheet_name=component)
+        component_dict_list[f"{component}_hosts"] = {
+            "hosts": {row.host_name: row.drop("host_name").to_dict() for _, row in component_sheet.iterrows()},
+        }
+        component_dict_list[f"{component}_hosts"]["hosts"] = {
+            host_name: {**host_data, "ansible_python_interpreter": "/usr/bin/python3"}
+            for host_name, host_data in component_dict_list[f"{component}_hosts"]["hosts"].items()
+        }
 
     return component_dict_list
 
 
 def dump_to_yaml(component_dict_list: dict, inventory_config_list: dict) -> None:
     """
-        Save inventory info to inventory yaml
+    Save inventory info to inventory yaml files.
 
     Args:
-        component_dict_list(dict): host component info
-        inventory_config_list(dict): inventory config list
+        component_dict_list (dict): Host component info.
+        inventory_config_list (dict): Inventory config list.
 
     Returns:
         None
     """
-    make_dir(OUTPUT_DIR)
+    OUTPUT_DIR.mkdir(exist_ok=True)
     for component, component_info in inventory_config_list.items():
-        hosts_info_json = dict()
-        for host_info in component_info:
-            if host_info not in component_dict_list.keys():
-                continue
-            hosts_info_json[host_info] = component_dict_list.get(host_info)
-        inventory_file_path = os.path.join(OUTPUT_DIR, component)
-        with open(inventory_file_path, "w", encoding="utf-8") as inventory_file:
+        hosts_info_json = {host_info: component_dict_list.get(host_info) for host_info in component_info if host_info in component_dict_list}
+        inventory_file_path = OUTPUT_DIR / component
+        with inventory_file_path.open("w", encoding="utf-8") as inventory_file:
             yaml.dump(hosts_info_json, inventory_file)
 
 
-def get_inventory() -> None:
+def build_inventory() -> None:
     """
-        Build inventory file entry
+    Build inventory file entry.
 
     Args:
         None
@@ -111,12 +81,12 @@ def get_inventory() -> None:
     Returns:
         None
     """
-    with open(INVENTORY_CONFIG_FILE, "r") as inventory_cfg:
+    with INVENTORY_CONFIG_FILE.open("r") as inventory_cfg:
         inventory_config_list = yaml.safe_load(inventory_cfg)
         component_list = list(inventory_config_list.keys())
-        component_dict_list = parse_all_dict(HOST_INFO_FILE, component_list)
+        component_dict_list = parse_host_info(HOST_INFO_FILE, component_list)
         dump_to_yaml(component_dict_list, inventory_config_list)
 
 
 if __name__ == "__main__":
-    get_inventory()
+    build_inventory()
