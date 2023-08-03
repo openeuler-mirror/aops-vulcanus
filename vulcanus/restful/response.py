@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # ******************************************************************************
-# Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2021-2023. All rights reserved.
 # licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
@@ -10,12 +10,6 @@
 # PURPOSE.
 # See the Mulan PSL v2 for more details.
 # ******************************************************************************/
-"""
-Time:
-Author:
-Description: response function
-"""
-import sqlalchemy
 import os
 import json
 from functools import wraps
@@ -25,14 +19,16 @@ from jwt.exceptions import ExpiredSignatureError
 from flask import request, jsonify
 from flask_restful import Resource
 from werkzeug.utils import secure_filename
+
+from vulcanus.conf.constant import TIMEOUT
 from vulcanus.database.proxy import DataBaseProxy, RedisProxy
 from vulcanus.log.log import LOGGER
 from vulcanus.restful.serialize.validate import validate
 from vulcanus.restful.resp import make_response, state
 from vulcanus.token import decode_token
 from vulcanus.conf import configuration
-from vulcanus.database.proxy import ElasticsearchProxy, PromDbProxy, MysqlProxy
-from vulcanus.conf.constant import TIMEOUT
+from vulcanus.database.proxy import MysqlProxy
+from vulcanus.exceptions import DatabaseConnectionFailed
 
 
 class BaseResponse(Resource):
@@ -57,44 +53,23 @@ class BaseResponse(Resource):
         """
         if not isinstance(data, dict):
             LOGGER.error("The param format of rest is not dict")
-            result = make_response(label=state.PARAM_ERROR)
-            return result
+            return make_response(label=state.PARAM_ERROR)
 
         try:
+            request_body = dict(method=method, url=url, json=data, timeout=timeout)
             if header:
-                response = requests.request(method=method, url=url, json=data, headers=header, timeout=timeout)
-            else:
-                response = requests.request(method=method, url=url, json=data, timeout=timeout)
-            if response.status_code != 200:
-                result = make_response(label=state.SERVER_ERROR)
-            else:
-                result = json.loads(response.text)
+                request_body.update(dict(headers=header))
+
+            response = requests.request(**request_body)
+            result = (
+                make_response(label=state.SERVER_ERROR) if response.status_code != 200 else json.loads(response.text)
+            )
+
         except requests.exceptions.RequestException as error:
             LOGGER.error(error)
             result = make_response(label=state.HTTP_CONNECT_ERROR)
 
         return result
-
-    @classmethod
-    def get_result(cls, res, method, url, args):
-        """
-        Get response result
-
-        Args:
-            res(int): verify result
-            method(str): restful function
-            url(str): restful url
-            args(dict): parameter
-
-        Returns:
-            dict: response body
-        """
-        if res == state.SUCCEED:
-            response = cls.get_response(method, url, args)
-        else:
-            response = make_response(res)
-
-        return response
 
     @classmethod
     def verify_args(cls, args, schema, load=False):
@@ -124,7 +99,7 @@ class BaseResponse(Resource):
 
         Args:
             token(str)
-            args(dict)
+            args(dict): request params
 
         Returns:
             int: status code
@@ -143,7 +118,7 @@ class BaseResponse(Resource):
         if not cache_token or cache_token != token:
             return state.TOKEN_ERROR
 
-        args["username"] = verify_info["key"]
+        args['username'] = verify_info["key"]
         return state.SUCCEED
 
     @classmethod
@@ -166,7 +141,6 @@ class BaseResponse(Resource):
             LOGGER.debug(request.base_url)
             LOGGER.debug("Interface %s received args: %s", request.endpoint, args)
 
-        access_token = request.headers.get("access_token")
         verify_res = state.SUCCEED
         if schema:
             verify_res = cls.verify_args(args, schema)
@@ -184,7 +158,7 @@ class BaseResponse(Resource):
             return args, status
 
         if need_token:
-            verify_res = cls.verify_token(access_token, args)
+            verify_res = cls.verify_token(request.headers.get("access_token"), args)
 
         return args, verify_res
 
@@ -219,7 +193,7 @@ class BaseResponse(Resource):
 
             username = args["username"]
             filename = secure_filename(file.filename)
-            file_name = str(uuid.uuid4()) + "." + filename.rsplit(".", 1)[-1]
+            file_name = str(uuid.uuid4()) + "." + filename.rsplit('.', 1)[-1]
 
             if not os.path.exists(os.path.join(save_path, username)):
                 os.makedirs(os.path.join(save_path, username))
@@ -248,7 +222,7 @@ class BaseResponse(Resource):
         return jsonify(make_response(label=code, message=message, data=data))
 
     @staticmethod
-    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None, config=None):
+    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None):
         def verify_handle(api_view):
             @wraps(api_view)
             def wrapper(self, **kwargs):
@@ -261,15 +235,12 @@ class BaseResponse(Resource):
                     return api_view(self, **params)
                 try:
                     if not issubclass(proxy, MysqlProxy):
-                        db_proxy = proxy(config)
-                        db_proxy.connect()
+                        db_proxy = proxy()
                         return api_view(self, callback=db_proxy, **params)
 
-                    with proxy(config) as db_proxy:
-                        if isinstance(db_proxy, ElasticsearchProxy):
-                            db_proxy.connect()
+                    with proxy() as db_proxy:
                         return api_view(self, callback=db_proxy, **params)
-                except sqlalchemy.exc.SQLAlchemyError:
+                except DatabaseConnectionFailed:
                     return self.response(code=state.DATABASE_CONNECT_ERROR)
 
             return wrapper

@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # ******************************************************************************
-# Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2021-2023. All rights reserved.
 # licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
@@ -33,11 +33,4 @@ individuation = {
     "EMAIL_STMP": "",
 }
 
-email = {
-    "SERVER": "",
-    "PORT": 25,
-    "SENDER": "",
-    "AUTHORIZATION_CODE": "",
-    "SMTP_SSL": False,
-    "ENABLED": False,
-}
+email = {"SERVER": "", "PORT": 25, "SENDER": "", "AUTHORIZATION_CODE": "", "SMTP_SSL": False, "ENABLED": False}

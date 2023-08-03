@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # ******************************************************************************
-# Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2021-2023. All rights reserved.
 # licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
@@ -15,14 +15,12 @@ Time: 2021-12-21 11:47:57
 Author: peixiaochao
 Description: functions about of database proxy
 """
-import hmac
-import base64
 import time
 import math
 from sqlalchemy import create_engine
 from sqlalchemy.sql.expression import desc, asc
 
-from vulcanus.restful.resp.state import DATABASE_CONNECT_ERROR, PARTIAL_SUCCEED, SUCCEED
+from vulcanus.restful.resp.state import PARTIAL_SUCCEED, SUCCEED
 
 
 def make_mysql_engine_url(configuration):
@@ -114,33 +112,6 @@ def timestr_unix(time_str):
     return int(time.mktime(time_format))
 
 
-def operate(proxy, data, func, session=None):
-    """
-    Database operation
-
-    Args:
-        proxy(proxy instance)
-        data(dict)
-        func(str): function name
-        session(session or None): some database use session
-
-    Returns:
-        int: status code
-    """
-
-    if session is not None:
-        if not proxy.connect(session):
-            return DATABASE_CONNECT_ERROR
-    else:
-        if not proxy.connect():
-            return DATABASE_CONNECT_ERROR
-
-    function = getattr(proxy, func)
-    res = function(data)
-    proxy.close()
-    return res
-
-
 def sort_and_page(query_result, column, direction, per_page, page):
     """
     Sort and paginate the query result
@@ -216,52 +187,3 @@ def combine_return_codes(default_stat, *args):
             return PARTIAL_SUCCEED
         return SUCCEED
     return default_stat
-
-
-def generate_token(username, expire=3600):
-    """
-    generate token of username and expire time
-    Args:
-        username:
-        expire:
-
-    Returns:
-
-    """
-    time_str = str(time.time() + expire)
-    time_byte = time_str.encode("utf-8")
-    sha1_tester = hmac.new(username.encode("utf-8"), time_byte, "sha1").hexdigest()
-    token = time_str + ":" + sha1_tester
-    b64_token = base64.urlsafe_b64encode(token.encode("utf-8"))
-    return b64_token.decode("utf-8")
-
-
-def certify_token(username, token):
-    """
-    certify token function
-    Args:
-        username(str): user name
-        token(str): username and  expire time
-
-    Returns(boolean): True if certify token is succeed else False
-
-    """
-    token_str = base64.urlsafe_b64decode(token).decode("utf-8")
-    token_list = token_str.split(":")
-    if len(token_list) != 2:
-        return False
-
-    ts_str = token_list[0]
-    if float(ts_str) < time.time():
-        # token expired
-        return False
-
-    known_sha1_taster = token_list[1]
-    sha1 = hmac.new(username.encode("utf-8"), ts_str.encode("utf-8"), "sha1")
-    calc_sha1_tests = sha1.hexdigest()
-    if calc_sha1_tests != known_sha1_taster:
-        # token certification failed
-        return False
-
-    # token certification success
-    return True
