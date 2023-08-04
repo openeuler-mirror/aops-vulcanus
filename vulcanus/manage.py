@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 # ******************************************************************************
-# Copyright (c) Huawei Technologies Co., Ltd. 2021-2021. All rights reserved.
+# Copyright (c) Huawei Technologies Co., Ltd. 2021-2023. All rights reserved.
 # licensed under the Mulan PSL v2.
 # You can use this software according to the terms and conditions of the Mulan PSL v2.
 # You may obtain a copy of Mulan PSL v2 at:
@@ -10,34 +10,70 @@
 # PURPOSE.
 # See the Mulan PSL v2 for more details.
 # ******************************************************************************/
-"""
-Time:
-Author:
-Description:
-"""
 from flask import Flask
+from flask.blueprints import Blueprint
+from flask_restful import Api
+from vulcanus.database.helper import create_database_engine, make_mysql_engine_url
+from vulcanus.database.proxy import MysqlProxy, RedisProxy
+from vulcanus.conf import configuration
 
 
-def init_app(name):
+def _register_blue_point(urls):
+    api = Api()
+    for view, url in urls:
+        api.add_resource(view, url)
+    return api
+
+
+def _set_database_engine(settings):
+    engine = create_database_engine(
+        make_mysql_engine_url(settings), settings.mysql.get("POOL_SIZE"), settings.mysql.get("POOL_RECYCLE")
+    )
+    setattr(MysqlProxy, "engine", engine)
+
+
+def init_application(name: str, settings, register_urls: list = None, config: dict = None):
     """
     Init application
 
     Args:
-        name(str)
+        name(str): The name of the microservice, e.g zeus apollo
+        settings: privatized configuration of services,read the configuration content of zeus.ini apollo.ini
+                e.g settings = Config("zeus.ini", default_config)
+
+        register_urls: route list of the service, e.g
+            [
+                (cve_repo_view.VulImportYumRepo, VUL_REPO_IMPORT),
+                (cve_repo_view.VulGetYumRepo, VUL_REPO_GET),
+            ]
+        config: flask configuration item, e.g
+            {
+                "MAX_CONTENT_LENGTH": 1024
+            }
 
     Returns:
-        app
-        configuration
+        app: flask application
     """
-    app = Flask(name)
-    module = __import__(name, fromlist=[name])
-    for blue, api in module.BLUE_POINT:
+    service_module = __import__(name, fromlist=[name])
+    app = Flask(service_module.__name__)
+
+    # Unique configuration for flask service initialization
+    if config:
+        for config_item, config_content in config.items():
+            app.config[config_item] = config_content
+
+    # url routing address of the api service
+    # register the routing address into the blueprint
+    if register_urls:
+        api = _register_blue_point(register_urls)
         api.init_app(app)
-        app.register_blueprint(blue)
+        app.register_blueprint(Blueprint('manager', __name__))
 
-    try:
-        config = getattr(module.conf.configuration, name)
-    except AttributeError:
-        raise AttributeError("There is no config named %s" % name)
+    # sync service config
+    _set_database_engine(settings)
+    for config in [config for config in dir(settings) if not config.startswith("_")]:
+        setattr(configuration, config, getattr(settings, config))
 
-    return app, config
+    # init redis connect
+    RedisProxy()
+    return app
