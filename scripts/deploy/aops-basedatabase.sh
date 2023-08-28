@@ -1,4 +1,5 @@
 #!/bin/bash
+. /usr/bin/aops-vulcanus
 REPO_CONFIG_FILE="/etc/yum.repos.d/aops_elascticsearch.repo"
 INSTALL_SOFTWARE=$1
 
@@ -110,7 +111,6 @@ function start_mysql_service() {
   exit 1
 }
 
-
 function install_database() {
   if [ "${INSTALL_SOFTWARE}" = "elasticsearch" ]; then
     check_es_status
@@ -124,7 +124,31 @@ function install_database() {
     download_install_redis
     sudo systemctl start redis
   else
-    echo "Failed to parse parameters, please use 'elasticsearch/mysql'"
+    echo "Failed to parse parameters, please use 'elasticsearch/mysql/redis'"
   fi
 }
 
+function main(){
+  operation=$1
+  service=$2
+  case $operation in
+    "init")
+        if [ "${service}" != "zeus" ] && [ "${service}" != "apollo" ]; then
+          echo "[ERROR] Table initialization service can only be zeus or apollo"
+          echo "[INFO] e.g 'aops-basedatabase init zeus' or 'aops-basedatabase init apollo'"
+          exit 1
+        fi
+        config_file="/etc/aops/$service.ini"
+        sql="/opt/aops/database/$service.sql"
+        init_database_and_table $config_file $sql
+    ;;
+    "install")
+        install_database $service
+    ;;
+    *)  
+        echo "[WARNING] Only init and install operations are supported"
+    ;;
+esac
+}
+
+main $1 $2

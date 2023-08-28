@@ -470,36 +470,34 @@ class ElasticsearchProxy(DataBaseProxy):
             LOGGER.error("update elasticsearch indices fail")
 
     @staticmethod
-    def _make_es_paginate_body(data, count, body):
+    def _make_es_paginate_body(paginate_param, body):
         """
         Make a body that can query es by direction or do paginate
 
         Args:
-            data(dict): parameter
-            count(int): total count
+            paginate_param(dict): parameter,e.g
+                {
+                   "page":0,
+                   "size":10,
+                   "sort":"",
+                   "direction":"asc/dsc"
+                }
             body(dict): origin query body
 
         Returns:
             int: total page
         """
 
-        total_page = 1
+        page = int(paginate_param.get('page', 0))
+        size = int(paginate_param.get('size', 0))
+        if page and size:
+            start_from = (page - 1) * size
+            body.update({"from": start_from, "size": size})
 
-        page = data.get('page')
-        per_page = data.get('per_page')
-        if page and per_page:
-            page = int(page)
-            per_page = int(per_page)
-            total_page = math.ceil(count / per_page)
-            start = (page - 1) * per_page
-            body.update({"from": start, "size": per_page})
-
-        sort = data.get('sort')
-        direction = data.get('direction') or 'asc'
+        sort = paginate_param.get('sort')
+        direction = paginate_param.get('direction') or 'asc'
         if sort and direction:
             body.update({"sort": [{sort: {"order": direction, "unmapped_type": "keyword"}}]})
-
-        return total_page
 
     @staticmethod
     def _general_body(data=None):
