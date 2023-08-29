@@ -99,6 +99,8 @@ function is_started() {
 
 function start_service() {
   module_name=$1
+  echo "[INFO] 1. Before starting the service, ensure that the data table is initialized"
+  echo "[INFO] 2. Execute aops-basedatabase zeus or apollo to complete the data table initialization, For example '/opt/aops/script/aops-basedatabase init zues'"
   uwsgi -d --ini ${OUT_PATH}/"${module_name}".ini --enable-threads
   echo "[INFO] start uwsgi service: ${module_name} success"
   exit 0
@@ -130,7 +132,7 @@ function check_es_installed() {
   if [ -z "${es_ip}" ] || [ -z "${es_port}" ]; then
     echo "[ERROR] can not find config name 'ip' or 'port' of elasticsearch in: ${CONFIG_FILE}, please check the file"
     echo "If you have installed ES, Please set correct 'ip' value and 'port' of elasticsearch value and re-execute '${DATABASE_CONSTANT} start' "
-    echo "If you have not installed ES, please execute the automatic installation script '/opt/aops/script/sops-basedatabase elasticsearch' under the root user "
+    echo "If you have not installed ES, please execute the automatic installation script '/opt/aops/script/aops-basedatabase elasticsearch' under the root user "
     exit 1
   fi
   check_num "${es_port}" "es_port"
@@ -149,6 +151,7 @@ function check_es_installed() {
 
 function check_mysql_installed() {
   CONFIG_FILE=$1
+  SQL=$2
   echo "[INFO] start to check mysql"
 
   mysql_ip=$(get_config "${CONFIG_FILE}" "mysql" "ip")
@@ -157,20 +160,60 @@ function check_mysql_installed() {
   if [ -z "${mysql_ip}" ] || [ -z "${port}" ]; then
     echo "[ERROR] can not find config name 'ip' or 'port' of mysql in: ${CONFIG_FILE}, please check the file"
     echo "If you have installed mysql, please set correct 'ip' value and 'port' value of mysql and re-execute '${DATABASE_CONSTANT} start' "
-    echo "If you have not installed mysql, please execute the automatic installation script '/opt/aops/script/sops-basedatabase mysql' under the root user "
+    echo "If you have not installed mysql, please execute the automatic installation script '/opt/aops/script/aops-basedatabase install mysql' under the root user "
     exit 1
   fi
   check_num "${port}" "port"
-
   aops_database=$(get_config "$CONFIG_FILE" "mysql" "database_name")
-  create_aops_database=$(mysql -s -h "${mysql_ip}" -P ${port} -e "create database if not exists ${aops_database};" 2>&1)
-  if [ -n "${create_aops_database}" ]; then
+  connect_check_cmd="import pymysql
+try:
+    connect = pymysql.connect(host='$mysql_ip', port=$port, password='123456', database='$aops_database')
+    connect.close()
+except pymysql.err.OperationalError:
+    print(False)
+"
+  connect_check_result=$(python3 -c "$connect_check_cmd")
+  if [ "${init_result}" = "False" ]; then
     echo "========================================================================="
     echo "[ERROR] mysql connection FAILED, the following reason may cause failed:"
-    echo "[INFO] 1. You have not installed mysql,If you need to install, please execute the automatic installation script '/opt/aops/script/sops-basedatabase' under the root user"
+    echo "[INFO] 1. You have not installed mysql,If you need to install, please execute the automatic installation script '/opt/aops/script/aops-basedatabase' under the root user, For example '/opt/aops/script/aops-basedatabase install mysql'"
     echo "[INFO] 2. mysql configuration is incorrect,please update value of 'ip' and 'port' of mysql in ${CONFIG_FILE}"
     echo "[INFO] 3. mysql service not started,please start mysql service."
     exit 1
   fi
   echo "[INFO] mysql check ok"
 }
+
+function init_database_and_table() {
+    CONFIG_FILE=$1
+    mysql_ip=$(get_config "${CONFIG_FILE}" "mysql" "ip")
+    port=$(get_config "${CONFIG_FILE}" "mysql" "port")
+    sql_file=$2
+    init_database_and_table_cmd="import pymysql,os
+try:
+    database = pymysql.connect(host='$mysql_ip', port=$port, database='mysql', autocommit=True)
+    with open('$sql_file', 'r', encoding='utf-8') as file:
+        sql = file.read()
+    if not sql:
+        print(False)
+    else:
+        cursor = database.cursor()
+        for command in filter(lambda _sql: _sql != os.linesep and _sql, sql.split(';')):
+            sql_command = command.replace(os.linesep, '')
+            if not sql_command:
+                continue
+            cursor.execute(sql_command)
+    database.close()
+except (IOError, pymysql.err.OperationalError):
+    print(False)
+"
+    init_result=$(python3 -c "$init_database_and_table_cmd")
+    if [ "${init_result}" = "False" ]; then
+        echo "[ERROR] Table initialization failed"
+        echo "[INFO] 1. Make sure that the data table initialization of the zeus service is performed first."
+        echo "[INFO] 2. Check that the database configuration file is correct, please check value of 'ip' and 'port' of mysql in ${CONFIG_FILE}"
+    else
+        echo "[INFO] Database and table initialization ok"
+    fi
+}
+

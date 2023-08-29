@@ -10,6 +10,7 @@
 # PURPOSE.
 # See the Mulan PSL v2 for more details.
 # ******************************************************************************/
+import hashlib
 import datetime as dt
 import json
 import os
@@ -284,3 +285,17 @@ class ConfigFileParse:
                 LOGGER.error('%s parsed failed.', config_file)
 
         return conf
+
+
+def hash_value(text: str):
+    """
+    Computes the hash value of the string
+
+    Args:
+        text: string to be evaluated
+    """
+    if not text:
+        raise ValueError("The evaluated string is empty")
+    md5 = hashlib.md5()
+    md5.update(text.encode('utf-8'))
+    return md5.hexdigest()
