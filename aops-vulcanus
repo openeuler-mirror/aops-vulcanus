@@ -100,8 +100,13 @@ function is_started() {
 function start_service() {
   module_name=$1
   echo "[INFO] 1. Before starting the service, ensure that the data table is initialized"
-  echo "[INFO] 2. Execute aops-basedatabase zeus or apollo to complete the data table initialization, For example '/opt/aops/script/aops-basedatabase init zues'"
+  echo "[INFO] 2. Execute aops-basedatabase zeus or apollo to complete the data table initialization, For example '/opt/aops/script/aops-basedatabase init zeus'"
   uwsgi -d --ini ${OUT_PATH}/"${module_name}".ini --enable-threads
+  pid=`ps auxww | grep $module_name.ini | grep -v grep | awk '{print $2}'`
+  if [ "${pid}" = "" ]; then
+      echo "[ERROR] start uwsgi service: ${module_name} failed"
+      exit 1
+  fi
   echo "[INFO] start uwsgi service: ${module_name} success"
   exit 0
 }
@@ -167,7 +172,7 @@ function check_mysql_installed() {
   aops_database=$(get_config "$CONFIG_FILE" "mysql" "database_name")
   connect_check_cmd="import pymysql
 try:
-    connect = pymysql.connect(host='$mysql_ip', port=$port, password='123456', database='$aops_database')
+    connect = pymysql.connect(host='$mysql_ip', port=$port, database='$aops_database')
     connect.close()
 except pymysql.err.OperationalError:
     print(False)
