@@ -133,9 +133,9 @@ function main(){
   service=$2
   case $operation in
     "init")
-        if [ "${service}" != "zeus" ] && [ "${service}" != "apollo" ]; then
-          echo "[ERROR] Table initialization service can only be zeus or apollo"
-          echo "[INFO] e.g 'aops-basedatabase init zeus' or 'aops-basedatabase init apollo'"
+        if [ "${service}" != "zeus" ] && [ "${service}" != "apollo" ] && [ "${service}" != "diana" ]; then
+          echo "[ERROR] Table initialization service can only be zeus apollo or diana"
+          echo "[INFO] e.g 'aops-basedatabase init zeus' 'aops-basedatabase init apollo' or 'aops-basedatabase init diana'"
           exit 1
         fi
         config_file="/etc/aops/$service.ini"

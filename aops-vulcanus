@@ -101,9 +101,11 @@ function start_service() {
   module_name=$1
   echo "[INFO] 1. Before starting the service, ensure that the data table is initialized"
   echo "[INFO] 2. Execute aops-basedatabase zeus or apollo to complete the data table initialization, For example '/opt/aops/script/aops-basedatabase init zeus'"
+  rm -rf ${OUT_PATH}/"${module_name}".pid
   uwsgi -d --ini ${OUT_PATH}/"${module_name}".ini --enable-threads
   pid=`ps auxww | grep $module_name.ini | grep -v grep | awk '{print $2}'`
-  if [ "${pid}" = "" ]; then
+  local_pid=`cat ${OUT_PATH}/"${module_name}".pid`
+  if [ "${pid}" = "" ] && [ "${local_pid}" = "" ]; then
       echo "[ERROR] start uwsgi service: ${module_name} failed"
       exit 1
   fi
@@ -115,6 +117,7 @@ function stop_service() {
   module_name=$1
   echo "[INFO] stop uwsgi service: ${module_name}"
   uwsgi --stop ${OUT_PATH}/"${module_name}".pid
+  rm -rf ${OUT_PATH}/"${module_name}".pid
   echo "[INFO] stop ${AOPS_CONSTANT} service success"
   exit 0
 }
