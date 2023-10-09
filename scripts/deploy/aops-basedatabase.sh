@@ -1,7 +1,7 @@
 #!/bin/bash
 . /usr/bin/aops-vulcanus
 REPO_CONFIG_FILE="/etc/yum.repos.d/aops_elascticsearch.repo"
-INSTALL_SOFTWARE=$1
+INSTALL_SOFTWARE=$2
 
 function check_es_status() {
   visit_es_response=$(curl -s -XGET http://127.0.0.1:9200)
