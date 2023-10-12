@@ -100,7 +100,7 @@ function is_started() {
 function start_service() {
   module_name=$1
   echo "[INFO] 1. Before starting the service, ensure that the data table is initialized"
-  echo "[INFO] 2. Execute aops-basedatabase zeus or apollo to complete the data table initialization, For example '/opt/aops/script/aops-basedatabase init zeus'"
+  echo "[INFO] 2. Execute aops-basedatabase zeus or apollo to complete the data table initialization, For example '/opt/aops/scripts/deploy/aops-basedatabase.sh init zeus'"
   rm -rf ${OUT_PATH}/"${module_name}".pid
   uwsgi -d --ini ${OUT_PATH}/"${module_name}".ini --enable-threads
   pid=`ps auxww | grep $module_name.ini | grep -v grep | awk '{print $2}'`
@@ -140,7 +140,7 @@ function check_es_installed() {
   if [ -z "${es_ip}" ] || [ -z "${es_port}" ]; then
     echo "[ERROR] can not find config name 'ip' or 'port' of elasticsearch in: ${CONFIG_FILE}, please check the file"
     echo "If you have installed ES, Please set correct 'ip' value and 'port' of elasticsearch value and re-execute '${DATABASE_CONSTANT} start' "
-    echo "If you have not installed ES, please execute the automatic installation script '/opt/aops/script/aops-basedatabase elasticsearch' under the root user "
+    echo "If you have not installed ES, please execute the automatic installation script '/opt/aops/scripts/deploy/aops-basedatabase.sh elasticsearch' under the root user "
     exit 1
   fi
   check_num "${es_port}" "es_port"
@@ -149,7 +149,7 @@ function check_es_installed() {
   if [ -z "${visit_es_response}" ]; then
     echo "========================================================================="
     echo "[ERROR] elasticsearch connection FAILED,the following reason may cause failed:"
-    echo "[INFO] 1. You have not installed Elasticsearch, if you need to install, please execute the automatic installation script '/opt/aops/script/sops-basedatabase' under the root user"
+    echo "[INFO] 1. You have not installed Elasticsearch, if you need to install, please execute the automatic installation script '/opt/aops/scripts/deploy/aops-basedatabase.sh' under the root user"
     echo "[INFO] 2. Elasticsearch configuration is incorrect, please update value of 'ip' and 'port' of elasticsearch in $CONFIG_FILE"
     echo "[INFO] 3. Elasticsearch service not started, please start elasticsearch service."
     exit 1
@@ -184,7 +184,7 @@ except pymysql.err.OperationalError:
   if [ "${init_result}" = "False" ]; then
     echo "========================================================================="
     echo "[ERROR] mysql connection FAILED, the following reason may cause failed:"
-    echo "[INFO] 1. You have not installed mysql,If you need to install, please execute the automatic installation script '/opt/aops/script/aops-basedatabase' under the root user, For example '/opt/aops/script/aops-basedatabase install mysql'"
+    echo "[INFO] 1. You have not installed mysql,If you need to install, please execute the automatic installation script '/opt/aops/scripts/deploy/aops-basedatabase.sh' under the root user, For example '/opt/aops/scripts/deploy/aops-basedatabase.sh install mysql'"
     echo "[INFO] 2. mysql configuration is incorrect,please update value of 'ip' and 'port' of mysql in ${CONFIG_FILE}"
     echo "[INFO] 3. mysql service not started,please start mysql service."
     exit 1
