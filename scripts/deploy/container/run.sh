@@ -71,11 +71,12 @@ main(){
     while :
     do
         echo "===========================Container arrangement==========================="
-        echo "1. Build the docker container (build)."
-        echo "2. Start the container orchestration service (start-service/start-env)."
-        echo "3. Stop all container services (stop-service/stop-env)."
+        echo "Welcome to the one-click deployment script, supporting pre-building of container images and start-stop of services."
+        echo "Image Building (build): supports the generation of docker images for zeus, apollo, hermes services."
+        echo "Service Start (start): the service types are divided into basic environment services and application services. Basic environment services include mysql, elasticsearch, redis, kafka, prometheus, which can be started by entering the 'start-env' option. Application services include apollo, zeus, hermes, which can be started by entering the 'start-service' option. please remember that, in the absence of a pre-existing environment, the correct order of using one-click startup services is to first execute "start-env" and then "start-service" Both steps are essential and cannot be skipped."
+        echo "Stop Service (stop): enter 'stop-env' or 'stop-service' to stop the basic environment services and application services respectively. After the basic environment services are stopped, if the configuration items of the application services are not reconfigured, it will cause the application services to be unusable. Conversely, after stopping the application services, there is no impact on the basic environment services."
         echo "Enter to exit the operation (Q/q)."
-        read -p "Select an operation procedure to continue: " operation
+        read -p "Please enter build, start-env, start-service, stop-env, stop-service, or q/Q to proceed to the next step: " operation
         case $operation in
             "build")
                 docker_build
@@ -83,6 +84,8 @@ main(){
             ;;
             "start-service")
                 docker-compose up -d
+                bash /opt/aops/scripts/aops-basedatabase.sh init zeus
+                bash /opt/aops/scripts/aops-basedatabase.sh init apollo
             ;;
             "start-env")
                 prometheus

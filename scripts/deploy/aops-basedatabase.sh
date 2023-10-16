@@ -1,5 +1,4 @@
 #!/bin/bash
-. /usr/bin/aops-vulcanus
 REPO_CONFIG_FILE="/etc/yum.repos.d/aops_elascticsearch.repo"
 INSTALL_SOFTWARE=$2
 
@@ -126,6 +125,43 @@ function install_database() {
   else
     echo "Failed to parse parameters, please use 'elasticsearch/mysql/redis'"
   fi
+}
+
+function get_config() {
+  INIFILE=$1
+  SECTION=$2
+  ITEM=$3
+  awk -F '=' '/\['"$SECTION"'\]/{a=1}a==1&&$1~/'"$ITEM"'/{print $2; exit}' "$INIFILE"
+}
+
+function init_database_and_table() {
+    CONFIG_FILE=$1
+    mysql_ip=$(get_config "${CONFIG_FILE}" "mysql" "ip")
+    port=$(get_config "${CONFIG_FILE}" "mysql" "port")
+    sql_file=$2
+    init_database_and_table_cmd="import pymysql,os
+from pymysql.constants import CLIENT
+try:
+    database = pymysql.connect(host='$mysql_ip', port=$port, database='mysql', autocommit=True,client_flag=CLIENT.MULTI_STATEMENTS)
+    with open('$sql_file', 'r', encoding='utf-8') as file:
+        sql = file.read()
+    if not sql:
+        print(False)
+    else:
+        cursor = database.cursor()
+        cursor.execute(sql)
+    database.close()
+except (IOError, pymysql.err.OperationalError):
+    print(False)
+"
+    init_result=$(python3 -c "$init_database_and_table_cmd")
+    if [ "${init_result}" = "False" ]; then
+        echo "[ERROR] Table initialization failed"
+        echo "[INFO] 1. Make sure that the data table initialization of the zeus service is performed first."
+        echo "[INFO] 2. Check that the database configuration file is correct, please check value of 'ip' and 'port' of mysql in ${CONFIG_FILE}"
+    else
+        echo "[INFO] Database and table initialization ok"
+    fi
 }
 
 function main(){
