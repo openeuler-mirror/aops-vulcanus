@@ -60,12 +60,16 @@ def generate_token(unique_iden, minutes=20, **kwargs):
     try:
         token_body["key"] = unique_iden
         token_body["create_time"] = time.localtime()
-        return jwt.encode(
+        jwt_token = jwt.encode(
             token_body,
             configuration.individuation.get("PRIVATE_KEY"),
             algorithm="HS256",
             headers=dict(alg="HS256"),
         )
+        if isinstance(jwt_token, bytes):
+            jwt_token = jwt_token.decode("utf-8")
+        return jwt_token
+
     except Exception:
         raise ValueError("Token generation failed")
 

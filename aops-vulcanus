@@ -192,36 +192,5 @@ except pymysql.err.OperationalError:
   echo "[INFO] mysql check ok"
 }
 
-function init_database_and_table() {
-    CONFIG_FILE=$1
-    mysql_ip=$(get_config "${CONFIG_FILE}" "mysql" "ip")
-    port=$(get_config "${CONFIG_FILE}" "mysql" "port")
-    sql_file=$2
-    init_database_and_table_cmd="import pymysql,os
-try:
-    database = pymysql.connect(host='$mysql_ip', port=$port, database='mysql', autocommit=True)
-    with open('$sql_file', 'r', encoding='utf-8') as file:
-        sql = file.read()
-    if not sql:
-        print(False)
-    else:
-        cursor = database.cursor()
-        for command in filter(lambda _sql: _sql != os.linesep and _sql, sql.split(';')):
-            sql_command = command.replace(os.linesep, '')
-            if not sql_command:
-                continue
-            cursor.execute(sql_command)
-    database.close()
-except (IOError, pymysql.err.OperationalError):
-    print(False)
-"
-    init_result=$(python3 -c "$init_database_and_table_cmd")
-    if [ "${init_result}" = "False" ]; then
-        echo "[ERROR] Table initialization failed"
-        echo "[INFO] 1. Make sure that the data table initialization of the zeus service is performed first."
-        echo "[INFO] 2. Check that the database configuration file is correct, please check value of 'ip' and 'port' of mysql in ${CONFIG_FILE}"
-    else
-        echo "[INFO] Database and table initialization ok"
-    fi
-}
+
 
