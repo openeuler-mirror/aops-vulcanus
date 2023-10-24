@@ -94,7 +94,7 @@ class TimedTask:
             LOGGER.error("Wrong trigger parameter for timed tasks : %s.", trigger)
             return False
 
-        if "day_of_week" not in timed or "hour" not in timed:
+        if "day_of_week" not in timed or "hour" not in timed or "minutes" not in timed:
             LOGGER.error("Missing required fields when creating scheduled task.")
             return False
 
