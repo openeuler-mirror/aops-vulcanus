@@ -22,7 +22,7 @@ setup(
         "prettytable",
         "pygments",
         "SQLAlchemy",
-        "elasticsearch>=7",
+        "elasticsearch==7",
         "prometheus_api_client",
         "urllib3",
         "Werkzeug",
