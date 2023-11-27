@@ -16,7 +16,6 @@ Author:
 Description: Database proxy
 """
 from functools import wraps
-import math
 from datetime import datetime
 from urllib3.exceptions import LocationValueError
 
