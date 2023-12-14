@@ -82,15 +82,16 @@ class BaseResponse(Resource):
             load(bool): do parameter deserializing if load is set to true
 
         Returns:
-            int: status code
+            Tuple[dict, str]
+            a tuple containing two elements (serialized parameter,status code).
         """
         # verify the params
         args, errors = validate(schema, args, load)
         if errors:
             LOGGER.error(errors)
-            return state.PARAM_ERROR
+            return args, state.PARAM_ERROR
 
-        return state.SUCCEED
+        return args, state.SUCCEED
 
     @classmethod
     def verify_token(cls, token, args):
@@ -143,7 +144,7 @@ class BaseResponse(Resource):
 
         verify_res = state.SUCCEED
         if schema:
-            verify_res = cls.verify_args(args, schema)
+            args, verify_res = cls.verify_args(args, schema, True)
             if verify_res != state.SUCCEED:
                 return args, verify_res
         exempt_authentication = request.headers.get("exempt_authentication")
