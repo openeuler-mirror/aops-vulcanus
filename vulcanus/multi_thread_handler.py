@@ -65,7 +65,7 @@ class MultiThreadHandler:
 
         """
         if len(self.tasks) == 0:
-            LOGGER.error("The count of tasks is zero, " "please check and try again.")
+            LOGGER.error("The count of tasks is zero, please check and try again.")
             return
 
         if not self._workers:
@@ -98,11 +98,11 @@ class MultiThreadHandler:
             try:
                 res.append(future.result(timeout=future_timeout))
             except TypeError as e:
-                LOGGER.error("An error occurred during thread execution " "due to incorrect parameter.")
+                LOGGER.error("An error occurred during thread execution, due to incorrect parameter.")
                 res.append({"message": str(e)})
 
             except Exception:
-                LOGGER.warning("An error occurred during thread execution," "please check and try again.")
+                LOGGER.warning("An error occurred during thread execution, please check and try again.")
                 res.append({"message": future.exception()})
 
         return res
