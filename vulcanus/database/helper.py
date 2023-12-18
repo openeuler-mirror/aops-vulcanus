@@ -127,7 +127,7 @@ def sort_and_page(query_result, column, direction, per_page, page):
         sqlalchemy.orm.query.Query
     """
     total_page = 1
-    total_count = len(query_result.all())
+    total_count = query_result.count()
 
     if not total_count:
         return query_result, total_page
