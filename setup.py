@@ -22,14 +22,14 @@ setup(
         "prettytable",
         "pygments",
         "SQLAlchemy",
-        "elasticsearch==7",
+        "elasticsearch>=7,<8",
         "prometheus_api_client",
         "urllib3",
         "Werkzeug",
         "Flask_RESTful",
         "Flask",
         "Flask-APScheduler",
-        "apscheduler"
+        "apscheduler",
     ],
     author="cmd-lsw-yyy-zyc",
     data_files=[
