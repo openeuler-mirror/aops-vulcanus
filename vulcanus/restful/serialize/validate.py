@@ -64,7 +64,7 @@ class ValidateRules:
         """
         validation rules for username, which only contains string or number
         """
-        if not re.findall("[a-zA-Z0-9]{5,20}", string):
+        if not re.findall("^[a-zA-Z0-9]{5,20}$", string):
             raise ValidationError("username should only contains string or number, between 5 and 20 characters!")
 
     @staticmethod
@@ -72,8 +72,18 @@ class ValidateRules:
         """
         validation rules for password, which only contains string or number
         """
-        if not re.findall("[a-zA-Z0-9]{6,20}", string):
+        if not re.findall("^[a-zA-Z0-9]{6,20}$", string):
             raise ValidationError("password should only contains string or number, between 6 and 20 characters!!")
+    
+    @staticmethod
+    def ipv4_address_check(string: str):
+        """
+        validation rules for IPV4 address
+        """
+        ipv4_address_pattern = r"^((25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)\.){3}(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)$"
+        if not re.findall(ipv4_address_pattern, string):
+            raise ValidationError("Not a valid IPV4 address.")
+    
 
 
 class PaginationSchema(Schema):
