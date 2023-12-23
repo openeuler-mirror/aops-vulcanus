@@ -16,9 +16,9 @@ Author:
 Description: Database proxy
 """
 from functools import wraps
-import math
 from datetime import datetime
 from urllib3.exceptions import LocationValueError
+from requests.exceptions import ConnectionError
 
 import sqlalchemy
 from sqlalchemy.exc import SQLAlchemyError, DisconnectionError
@@ -543,8 +543,12 @@ class PromDbProxy(DataBaseProxy):
         Returns:
             bool: connect succeed or fail
         """
-
-        return self._prom.check_prometheus_connection()
+        connected = False
+        try:
+            connected = self._prom.check_prometheus_connection()
+        except ConnectionError as error:
+            LOGGER.error(error)
+        return connected
 
     def query(self, host, time_range, metric, label_config=None):
         """
