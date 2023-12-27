@@ -108,7 +108,7 @@ class MysqlProxy(DataBaseProxy):
         """
         try:
             self._create_session()
-        except sqlalchemy.exc.SQLAlchemyError as error:
+        except DatabaseConnectionFailed as error:
             LOGGER.error(error)
             return False
 
