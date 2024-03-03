@@ -11,7 +11,7 @@
 # See the Mulan PSL v2 for more details.
 # ******************************************************************************/
 import os
-from typing import List, Any, NoReturn
+from typing import List, NoReturn
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 from vulcanus.log.log import LOGGER
