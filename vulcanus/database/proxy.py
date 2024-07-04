@@ -15,16 +15,21 @@ Time:
 Author:
 Description: Database proxy
 """
-from functools import wraps
 from datetime import datetime
-from urllib3.exceptions import LocationValueError
-from requests.exceptions import ConnectionError
+from functools import wraps
 
 import sqlalchemy
+from elasticsearch import Elasticsearch, ElasticsearchException, helpers, TransportError, NotFoundError
+from requests.exceptions import ConnectionError
 from sqlalchemy.exc import SQLAlchemyError, DisconnectionError
 from sqlalchemy.orm import sessionmaker
-from elasticsearch import Elasticsearch, ElasticsearchException, helpers, TransportError, NotFoundError
-from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
+from urllib3.exceptions import LocationValueError
+
+try:
+    from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
+except ImportError:
+    PrometheusConnect = None
+    PrometheusApiClientException = None
 import redis
 from redis import Redis, ConnectionPool
 from vulcanus.log.log import LOGGER
@@ -225,8 +230,8 @@ class ElasticsearchProxy(DataBaseProxy):
             host (str)
             port (int)
         """
-        self._host = host or configuration.elasticsearch.get('IP')
-        self._port = port or configuration.elasticsearch.get('PORT')
+        self._host = host or configuration.elasticsearch.host
+        self._port = port or configuration.elasticsearch.port
         if not ElasticsearchProxy._es_db:
             try:
                 ElasticsearchProxy._es_db = Elasticsearch([{"host": self._host, "port": self._port, "timeout": 60}])
@@ -529,8 +534,8 @@ class PromDbProxy(DataBaseProxy):
             host (str)
             port (int)
         """
-        self._host = host or configuration.prometheus.get('IP')
-        self._port = port or configuration.prometheus.get('PORT')
+        self._host = host or configuration.prometheus.host
+        self._port = port or configuration.prometheus.port
         self._prom = PrometheusConnect(url="http://%s:%s" % (self._host, self._port), disable_ssl=True)
         if not self.connected:
             raise DatabaseConnectionFailed("Promethus connection failed.")
@@ -636,8 +641,8 @@ class RedisProxy(DataBaseProxy):
             host (str)
             port (int)
         """
-        self._host = host or configuration.redis.get('IP')
-        self._port = port or configuration.redis.get('PORT')
+        self._host = host or configuration.redis.host
+        self._port = port or configuration.redis.port
         self.connect()
 
     def connect(self):

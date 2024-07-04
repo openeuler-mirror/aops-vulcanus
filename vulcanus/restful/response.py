@@ -10,25 +10,28 @@
 # PURPOSE.
 # See the Mulan PSL v2 for more details.
 # ******************************************************************************/
-import os
+import ast
 import json
-from functools import wraps
+import os
 import uuid
-import requests
-from jwt.exceptions import ExpiredSignatureError
-from flask import request, jsonify
-from flask_restful import Resource
-from werkzeug.utils import secure_filename
+from functools import wraps
+from urllib.parse import unquote
 
-from vulcanus.conf.constant import TIMEOUT
-from vulcanus.database.proxy import DataBaseProxy, RedisProxy
-from vulcanus.log.log import LOGGER
-from vulcanus.restful.serialize.validate import validate
-from vulcanus.restful.resp import make_response, state
-from vulcanus.token import decode_token
+import requests
+from flask import g, jsonify, request
+from flask_restful import Resource
+from jwt.exceptions import ExpiredSignatureError
+from retrying import retry
 from vulcanus.conf import configuration
-from vulcanus.database.proxy import MysqlProxy
+from vulcanus.conf.constant import ADMIN_USER, TIMEOUT, UserRoleType
+from vulcanus.database.proxy import MysqlProxy, RedisProxy
 from vulcanus.exceptions import DatabaseConnectionFailed
+from vulcanus.log.log import LOGGER
+from vulcanus.restful.resp import make_response, state
+from vulcanus.restful.serialize.validate import validate
+from vulcanus.rsa import load_public_key, verify_signature
+from vulcanus.token import decode_token, generate_token
+from werkzeug.utils import secure_filename
 
 
 class BaseResponse(Resource):
@@ -37,7 +40,7 @@ class BaseResponse(Resource):
     """
 
     @classmethod
-    def get_response(cls, method, url, data, header=None, timeout=TIMEOUT):
+    def get_response(cls, method, url, data=None, header=None, timeout=TIMEOUT, files=None):
         """
         send a request and get the response
 
@@ -51,25 +54,45 @@ class BaseResponse(Resource):
         Returns:
             dict: response body
         """
-        if not isinstance(data, dict):
+
+        @retry(
+            stop_max_attempt_number=3,
+            wait_exponential_multiplier=1000,
+            wait_exponential_max=5000,
+            retry_on_exception=lambda exception: isinstance(exception, requests.exceptions.RequestException),
+        )
+        def __http_request(method, url, data, timeout, headers=None, files=None):
+            _request_param = dict(method=method, url=url, timeout=timeout, headers=headers)
+            if files:
+                _request_param.update(dict(data=data, files=files))
+            else:
+                _request_param.update(dict(json=data))
+            response = requests.request(**_request_param)
+            if response.status_code in (500, 502, 503, 429, 408):
+                raise requests.exceptions.RequestException
+
+            return (
+                json.loads(response.text)
+                if response.status_code >= 200 and response.status_code < 300
+                else make_response(label=state.HTTP_CONNECT_ERROR, message=response.text)
+            )
+
+        if data and not isinstance(data, dict):
             LOGGER.error("The param format of rest is not dict")
             return make_response(label=state.PARAM_ERROR)
 
         try:
-            request_body = dict(method=method, url=url, json=data, timeout=timeout)
+            request_body = dict(method=method, url=url, data=data, timeout=timeout, files=files)
             if header:
                 request_body.update(dict(headers=header))
 
-            response = requests.request(**request_body)
-            result = (
-                make_response(label=state.SERVER_ERROR) if response.status_code != 200 else json.loads(response.text)
-            )
+            response = __http_request(**request_body)
 
         except requests.exceptions.RequestException as error:
             LOGGER.error(error)
-            result = make_response(label=state.HTTP_CONNECT_ERROR)
+            response = make_response(label=state.HTTP_CONNECT_ERROR)
 
-        return result
+        return response
 
     @classmethod
     def verify_args(cls, args, schema, load=False):
@@ -118,12 +141,41 @@ class BaseResponse(Resource):
         cache_token = RedisProxy.redis_connect.get("token_" + verify_info["key"])
         if not cache_token or cache_token != token:
             return state.TOKEN_ERROR
-
-        args['username'] = verify_info["key"]
+        g.username = verify_info["key"]
         return state.SUCCEED
 
+    @staticmethod
+    def _set_headers():
+        headers = {"Content-Type": "application/json"}
+        if "Access-Token" in request.headers:
+            headers["Access-Token"] = request.headers["Access-Token"]
+        if "X-Cluster-Username" in request.headers:
+            headers["X-Cluster-Username"] = request.headers["X-Cluster-Username"]
+        g.headers = headers
+
+    @staticmethod
+    def _request_body():
+        body = dict()
+        if request.method != "GET" and not request.files:
+            return request.get_json() or dict()
+
+        elif request.files:
+            return dict(request.form)
+
+        for key, value in request.args.items():
+            if (value.startswith("[") or value.startswith("{")) and (value.endswith("]") or value.endswith("}")):
+                body[key] = ast.literal_eval(value)
+            elif (value.startswith("%5B") and value.endswith("%5D")) or (
+                value.startswith("%7B") and value.endswith("%7D")
+            ):
+                body[key] = ast.literal_eval(unquote(value))
+            else:
+                body[key] = value
+
+        return body
+
     @classmethod
-    def verify_request(cls, schema=None, need_token=True, debug=True):
+    def verify_request(cls, schema=None, need_token=True, **kwargs):
         """
         Get request args, verify token and parameter
 
@@ -133,35 +185,49 @@ class BaseResponse(Resource):
             debug (bool, optional): whether need to print args and interface info. Defaults to True.
 
         Returns:
-            dict: request args
-            int: verify status code
+            dict: request body
+            str: verify status code
         """
-        args = request.args.to_dict() if request.method == "GET" else request.get_json() or dict()
+        request_args = cls._request_body()
+        pre_verify_result = state.SUCCEED
+        cls._set_headers()
+        # distribute service signature
+        if all(
+            [
+                request.headers.get("X-Permission"),
+                request.headers.get("X-Signature"),
+                request.headers.get("X-Cluster-Username"),
+            ]
+        ):
+            g.username = request.headers.get("X-Cluster-Username")
+            from vulcanus.cache import RedisCacheManage
 
-        if debug:
-            LOGGER.debug(request.base_url)
-            LOGGER.debug("Interface %s received args: %s", request.endpoint, args)
+            if RedisProxy.redis_connect.exists("token_" + g.username):
+                g.headers["Access-Token"] = RedisProxy.redis_connect.get("token_" + g.username)
+            else:
+                g.headers["Access-Token"] = generate_token(unique_iden=g.username)
+                RedisProxy.redis_connect.set("token_" + g.username, g.headers["Access-Token"])
+                RedisProxy.redis_connect.expire("token_" + g.username, 60 * 20)
+            cache = RedisCacheManage(domain=configuration.domain, redis_client=RedisProxy.redis_connect)
+            signature = request.headers.get("X-Signature")
+            if g.username == ADMIN_USER:
+                public_key = cache.location_cluster["public_key"]
+            else:
+                clusters = cache.get_user_cluster_private_key
+                sub_cluster_user = clusters.get(cache.location_cluster["cluster_id"])
+                public_key = sub_cluster_user["public_key"] if sub_cluster_user else None
 
-        verify_res = state.SUCCEED
+            if not public_key or not verify_signature(request_args, signature, load_public_key(public_key)):
+                return request_args, state.PERMESSION_ERROR
+            need_token = False
         if schema:
-            args, verify_res = cls.verify_args(args, schema, True)
-            if verify_res != state.SUCCEED:
-                return args, verify_res
-        exempt_authentication = request.headers.get("exempt_authentication")
-        if exempt_authentication:
-            status = (
-                state.SUCCEED
-                if exempt_authentication == configuration.individuation.get("EXEMPT_AUTHENTICATION")
-                else state.TOKEN_ERROR
-            )
-            args["username"] = request.headers.get("local_account")
-            args["timed"] = True
-            return args, status
-
+            request_args, pre_verify_result = cls.verify_args(request_args, schema, True)
+            if pre_verify_result != state.SUCCEED:
+                return request_args, pre_verify_result
         if need_token:
-            verify_res = cls.verify_token(request.headers.get("access_token"), args)
+            pre_verify_result = cls.verify_token(request.headers.get("Access-Token"), request_args)
 
-        return args, verify_res
+        return request_args, pre_verify_result
 
     @classmethod
     def verify_upload_request(cls, save_path, file_key="file"):
@@ -180,7 +246,7 @@ class BaseResponse(Resource):
         LOGGER.debug(request.base_url)
         LOGGER.debug("Interface %s received args: %s", request.endpoint, args)
 
-        access_token = request.headers.get("access_token")
+        access_token = request.headers.get("access-token")
         if args is None:
             args = {}
         verify_res = cls.verify_token(access_token, args)
@@ -192,7 +258,7 @@ class BaseResponse(Resource):
             if file is None or not file.filename:
                 return state.PARAM_ERROR, "", file_name
 
-            username = args["username"]
+            username = g.username
             filename = secure_filename(file.filename)
             file_name = str(uuid.uuid4()) + "." + filename.rsplit('.', 1)[-1]
 
@@ -223,11 +289,11 @@ class BaseResponse(Resource):
         return jsonify(make_response(label=code, message=message, data=data))
 
     @staticmethod
-    def handle(schema=None, token=True, debug=False, proxy: DataBaseProxy = None):
+    def handle(schema=None, token=True, debug=False, proxy=None):
         def verify_handle(api_view):
             @wraps(api_view)
             def wrapper(self, **kwargs):
-                params, status = self.verify_request(schema, need_token=token, debug=debug)
+                params, status = BaseResponse.verify_request(schema, need_token=token, debug=debug)
                 if status != state.SUCCEED:
                     return self.response(code=status)
 
@@ -238,7 +304,6 @@ class BaseResponse(Resource):
                     if not issubclass(proxy, MysqlProxy):
                         db_proxy = proxy()
                         return api_view(self, callback=db_proxy, **params)
-
                     with proxy() as db_proxy:
                         return api_view(self, callback=db_proxy, **params)
                 except DatabaseConnectionFailed:
@@ -247,3 +312,30 @@ class BaseResponse(Resource):
             return wrapper
 
         return verify_handle
+
+    @staticmethod
+    def permession():
+        def verify_permession(api_view):
+            @wraps(api_view)
+            def wrapper(self, host_id, *args, **kwargs):
+                from vulcanus.cache import RedisCacheManage
+
+                cache = RedisCacheManage(domain=configuration.domain, redis_client=RedisProxy.redis_connect)
+                if cache.user_role == UserRoleType.ADMINISTRATOR:
+                    return api_view(self, host_id=host_id, *args, **kwargs)
+
+                if not host_id:
+                    return api_view(self, host_id=host_id, *args, **kwargs)
+
+                if not cache.get_user_group_hosts():
+                    return self.response(code=state.PERMESSION_ERROR)
+
+                host_ids = [host_in for host_ids in cache.all_groups_hosts.values() for host_in in host_ids]
+                if host_id not in host_ids:
+                    return self.response(code=state.PERMESSION_ERROR)
+
+                return api_view(self, host_id=host_id, *args, **kwargs)
+
+            return wrapper
+
+        return verify_permession
