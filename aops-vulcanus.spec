@@ -1,20 +1,18 @@
 Name:		aops-vulcanus
-Version:	v1.2.1
-Release:	2
+Version:	v2.0.0
+Release:	1
 Summary:	A basic tool libraries of aops, including logging, configure and response, etc.
 License:	MulanPSL2
 URL:		https://gitee.com/openeuler/%{name}
 Source0:	%{name}-%{version}.tar.gz
-Patch0001:	0001-add-paging-parameter-schema.patch
-Patch0002:	0002-updateuwsgi-conf-file-generation-function.patch
 
 
 BuildRequires:  python3-setuptools
 Requires:   python3-concurrent-log-handler python3-xmltodict python3-pyyaml python3-marshmallow >= 3.13.0
-Requires:   python3-requests python3-xlrd python3-prettytable python3-pygments python3-sqlalchemy
-Requires:   python3-elasticsearch >= 7 python3-elasticsearch < 8 python3-prometheus-api-client python3-urllib3 python3-werkzeug
-Requires:   python3-flask python3-flask-restful python3-PyMySQL python3-kafka-python
-Requires:   python-jwt python3-redis python3-Flask-APScheduler >= 1.11.0 python3-APScheduler
+Requires:   python3-requests python3-xlrd python3-sqlalchemy
+Requires:   python3-elasticsearch >= 7 python3-elasticsearch < 8
+Requires:   python3-flask python3-flask-restful python3-PyMySQL python3-kafka-python python3-retrying
+Requires:   python-jwt python3-redis python3-Flask-APScheduler >= 1.11.0 python3-APScheduler python3-kazoo
 Provides:   aops-vulcanus
 Conflicts:  aops-utils
 
@@ -32,7 +30,7 @@ tools for aops, it's about aops deploy
 
 
 %prep
-%autosetup -n %{name}-%{version} -p1
+%autosetup -n %{name}-%{version} 
 
 
 # build for aops-vulcanus
@@ -50,11 +48,9 @@ cp -r scripts %{buildroot}/opt/aops/
 
 %files
 %doc README.*
-%attr(0644,root,root) %{_sysconfdir}/aops/system.ini
-%attr(0640,root,root) %{_sysconfdir}/aops/.aops-private-config.ini
+%attr(0644,root,root) %{_sysconfdir}/aops/aops-config.yml
 %{python3_sitelib}/aops_vulcanus*.egg-info
 %{python3_sitelib}/vulcanus/*
-%attr(0755,root,root) %{_bindir}/aops-vulcanus
 
 
 %files -n aops-tools
@@ -62,6 +58,10 @@ cp -r scripts %{buildroot}/opt/aops/
 
 
 %changelog
+* Tue May 28 2024 gongzhengtang<gong_zhengtang@163.com> - v2.0.0-1
+- support signature verification
+- unified management and control of the configuration center
+
 * Thu Jun 08 2023 wenxin<shusheng.wen@outlook.com> - v1.2.1-2
 - fix issue: aops-zeus app failed to load when first start by uwsgi
 - add paging parameter schema

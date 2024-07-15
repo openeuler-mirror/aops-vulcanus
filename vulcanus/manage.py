@@ -21,13 +21,13 @@ from vulcanus.conf import configuration
 def _register_blue_point(urls):
     api = Api()
     for view, url in urls:
-        api.add_resource(view, url)
+        api.add_resource(view, url, endpoint=view.__name__)
     return api
 
 
 def _set_database_engine(settings):
     engine = create_database_engine(
-        make_mysql_engine_url(settings), settings.mysql.get("POOL_SIZE"), settings.mysql.get("POOL_RECYCLE")
+        make_mysql_engine_url(settings), settings.mysql.pool_size, settings.mysql.pool_recycle
     )
     setattr(MysqlProxy, "engine", engine)
 
@@ -54,7 +54,8 @@ def init_application(name: str, settings, register_urls: list = None, config: di
     Returns:
         app: flask application
     """
-    service_module = __import__(name, fromlist=[name])
+    service_module = __import__(name)
+
     app = Flask(service_module.__name__)
 
     # Unique configuration for flask service initialization

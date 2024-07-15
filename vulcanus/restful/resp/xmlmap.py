@@ -128,7 +128,7 @@ class Response:
         if "message" not in kwargs:
             self.response_body["message"] = None
 
-        if "data" in kwargs and not kwargs["data"]:
+        if "data" in kwargs and kwargs["data"] is None:
             del kwargs["data"]
 
         self.response_body = kwargs

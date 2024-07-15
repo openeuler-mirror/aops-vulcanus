@@ -12,5 +12,6 @@
 # ******************************************************************************/
 
 from vulcanus.exceptions.database_exception import DatabaseError, DatabaseConnectionFailed
+from vulcanus.exceptions.synchronize_exception import SynchronizeError
 
-__all__ = ("DatabaseError", "DatabaseConnectionFailed")
+__all__ = ("DatabaseError", "DatabaseConnectionFailed", "SynchronizeError")
