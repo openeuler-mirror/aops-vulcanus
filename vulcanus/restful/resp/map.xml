@@ -12,6 +12,14 @@
     <status_code>500</status_code>
     <message_en>internal server error</message_en>
 </code>
+<code label="Server.Error">
+    <status_code>500</status_code>
+    <message_en>internal server error</message_en>
+</code>
+<code label="Permission.Error">
+    <status_code>401</status_code>
+    <message_en>permission error</message_en>
+</code>
 <code label="Param.Error">
     <status_code>1000</status_code>
     <message_en>request parameter error</message_en>
@@ -76,6 +84,10 @@
     <status_code>1109</status_code>
     <message_en>The query parameter is not valid, please check again</message_en>
 </code>
+<code label="Repeat.Data">
+    <status_code>1110</status_code>
+    <message_en>The query result should be unique, please check</message_en>
+</code>
 <code label="Login.Error">
     <status_code>1200</status_code>
     <message_en>incorrect username or password</message_en>
@@ -107,6 +119,22 @@
 <code label="Token.Expire">
     <status_code>1207</status_code>
     <message_en>token expired</message_en>
+</code>
+<code label="Cache.Userinfo.Failed">
+    <status_code>1208</status_code>
+    <message_en>cache userinfo failed</message_en>
+</code>
+<code label="Logout.Error">
+    <status_code>1209</status_code>
+    <message_en>logout error, get current username failed</message_en>
+</code>
+<code label="Password.Error">
+    <status_code>1210</status_code>
+    <message_en>password error</message_en>
+</code>
+<code label="User.Error">
+    <status_code>1210</status_code>
+    <message_en>user not exist</message_en>
 </code>
 <code label="Task.Execution.Fail">
     <status_code>1301</status_code>
@@ -159,5 +187,41 @@
 <code label="Add.Host.Failed">
     <status_code>1801</status_code>
     <message_en>All host add failed</message_en>
+</code>
+<code label="Redis.Cacheinfo.Error">
+    <status_code>1901</status_code>
+    <message_en>redis cache info error</message_en>
+</code>
+<code label="Cluster.Repeat.Bind.Error">
+    <status_code>2001</status_code>
+    <message_en>cluster repeat bind error</message_en>
+</code>
+<code label="LocalCluster.Nonsupport.Manage.OtherCluster">
+    <status_code>2002</status_code>
+    <message_en>local cluster nonsupport manage other cluster</message_en>
+</code>
+<code label="Ip.Ping.Failed">
+    <status_code>2003</status_code>
+    <message_en>ip ping failed</message_en>
+</code>
+<code label="TargetCluster.Nonsupport.Be.Managed">
+    <status_code>2004</status_code>
+    <message_en>target cluster nonsupport be managed</message_en>
+</code>
+<code label="TargetCluster.Nonsupport.Be.Deleted">
+    <status_code>2005</status_code>
+    <message_en>target cluster nonsupport be deleted, please wait for synchronize finished</message_en>
+</code>
+<code label="SynchronizeTask.Failed">
+    <status_code>2101</status_code>
+    <message_en>Synchronize task failed</message_en>
+</code>
+<code label="LocalCluster.Nonsupport.Synchronize">
+    <status_code>2102</status_code>
+    <message_en>nonsupport synchronize local cluster</message_en>
+</code>
+<code label="LocalCluster.No.Managed.Data">
+    <status_code>2103</status_code>
+    <message_en>local cluster no managed data</message_en>
 </code>
 </codewrap>

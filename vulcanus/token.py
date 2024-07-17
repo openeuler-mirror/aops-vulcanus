@@ -62,7 +62,7 @@ def generate_token(unique_iden, minutes=20, **kwargs):
         token_body["create_time"] = time.localtime()
         jwt_token = jwt.encode(
             token_body,
-            configuration.individuation.get("PRIVATE_KEY"),
+            configuration.individuation.private_key,
             algorithm="HS256",
             headers=dict(alg="HS256"),
         )
@@ -88,7 +88,7 @@ def decode_token(token):
     if not token:
         raise ValueError("Please enter a valid token")
     try:
-        return jwt.decode(token, configuration.individuation.get("PRIVATE_KEY"), algorithms=["HS256"])
+        return jwt.decode(token, configuration.individuation.private_key, algorithms=["HS256"])
     except ExpiredSignatureError:
         raise ExpiredSignatureError("Signature has expired")
     except Exception:
