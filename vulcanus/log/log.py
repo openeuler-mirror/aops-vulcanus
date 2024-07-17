@@ -32,14 +32,14 @@ class Logger:
         """
         Class instance initialization.
         """
-        log_dir = configuration.log.get("LOG_DIR")
+        log_dir = configuration.log.log_dir
         if not os.path.exists(log_dir):
             os.makedirs(log_dir, mode=0o644)
 
         self.__log_name = os.path.join(log_dir, "aops.log")
-        self.__log_level = configuration.log.get("LOG_LEVEL")
-        self.__max_bytes = configuration.log.get("MAX_BYTES")
-        self.__backup_count = configuration.log.get("BACKUP_COUNT")
+        self.__log_level = configuration.log.log_level
+        self.__max_bytes = configuration.log.max_bytes
+        self.__backup_count = configuration.log.backup_count
         self.__log_format = logging.Formatter(
             "%(asctime)s %(levelname)s %(module)s/%(funcName)s/%(lineno)s: %(message)s"
         )

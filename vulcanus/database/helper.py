@@ -33,11 +33,16 @@ def make_mysql_engine_url(configuration):
     Returns:
         str: url of engine
     """
-    mysql_host = configuration.mysql.get("IP")
-    mysql_port = configuration.mysql.get("PORT")
-    mysql_url_format = configuration.mysql.get("ENGINE_FORMAT")
-    mysql_database_name = configuration.mysql.get("DATABASE_NAME")
-    url = mysql_url_format % (mysql_host, mysql_port, mysql_database_name)
+    mysql_host = configuration.mysql.host
+    mysql_port = configuration.mysql.port
+    username = configuration.mysql.username
+    password = configuration.mysql.password
+    mysql_database_name = configuration.mysql.database
+    if username and password:
+        url = f"mysql+pymysql://{username}:{password}@{mysql_host}:{mysql_port}/{mysql_database_name}"
+    else:
+        url = f"mysql+pymysql://@{mysql_host}:{mysql_port}/{mysql_database_name}"
+
     return url
 
 

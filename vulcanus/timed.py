@@ -108,14 +108,13 @@ class TimedTaskManager:
 
     __slots__ = ["_timed_scheduler", "_timed_config"]
 
-    def __init__(self, app: Flask, config_path: str) -> None:
+    def __init__(self, app: Flask = None, config_path: str = None) -> None:
         """
         1. Init APScheduler and application
         2. read timed task config
         """
-        self._timed_scheduler = APScheduler()
+        self._timed_scheduler = APScheduler(app=app)
         self._timed_config = None
-        self._init_app(app)
         if self._timed_config is None:
             self._timed_config = self._parse_config(config_path)
 
@@ -126,15 +125,6 @@ class TimedTaskManager:
     @property
     def timed_config(self) -> dict:
         return self._timed_config
-
-    def _init_app(self, app: Flask):
-        """
-        Initialize APScheduler
-
-        Args:
-            app(Flask)
-        """
-        self.timed_scheduler.init_app(app)
 
     @staticmethod
     def _parse_config(file_path: str) -> dict:
@@ -184,7 +174,7 @@ class TimedTaskManager:
 
     def _check(self, task: TimedTask) -> bool:
         """
-        1. check whether specifiy the task type.
+        1. check whether specifiy the task name.
         2. Check whether the task has existed.
 
         Args:
@@ -193,9 +183,6 @@ class TimedTaskManager:
         Returns:
             bool
         """
-        if task.timed_config.get("type") is None:
-            LOGGER.warning("Please specify the task type of [%s]", task.task_id)
-            return False
 
         if self.get_task(task.task_id):
             LOGGER.warning("This task name [%s] already exists, ignore it", task.task_id)
