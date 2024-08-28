@@ -146,7 +146,7 @@ class BaseResponse(Resource):
 
     @staticmethod
     def _set_headers():
-        headers = {"Content-Type": "application/json"}
+        headers = {"Content-Type": "application/json", "Accept-Language": request.headers.get("Accept-Language")}
         if "Access-Token" in request.headers:
             headers["Access-Token"] = request.headers["Access-Token"]
         if "X-Cluster-Username" in request.headers:
