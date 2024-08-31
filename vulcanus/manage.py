@@ -32,7 +32,7 @@ def _set_database_engine(settings):
     setattr(MysqlProxy, "engine", engine)
 
 
-def init_application(name: str, settings, register_urls: list = None, config: dict = None):
+def init_application(name: str, settings, register_urls: list = None, config: dict = None, template: str = None):
     """
     Init application
 
@@ -56,7 +56,7 @@ def init_application(name: str, settings, register_urls: list = None, config: di
     """
     service_module = __import__(name)
 
-    app = Flask(service_module.__name__)
+    app = Flask(service_module.__name__, template_folder=template)
 
     # Unique configuration for flask service initialization
     if config:
