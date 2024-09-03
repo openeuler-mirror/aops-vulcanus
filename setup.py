@@ -3,14 +3,14 @@
 Description: setup up the A-ops utils module.
 """
 import os
-from setuptools import setup, find_packages
 from distutils.sysconfig import get_python_lib
 
+from setuptools import find_packages, setup
 
 MAP_XML = os.path.join(get_python_lib(), "vulcanus", "restful", "resp")
 setup(
     name="aops-vulcanus",
-    version="2.0.0",
+    version="2.1.0",
     packages=find_packages(),
     install_requires=[
         "concurrent-log-handler",
