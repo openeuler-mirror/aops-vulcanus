@@ -1,5 +1,5 @@
 Name:		aops-vulcanus
-Version:	v2.0.0
+Version:	v2.1.0
 Release:	1
 Summary:	A basic tool libraries of aops, including logging, configure and response, etc.
 License:	MulanPSL2
