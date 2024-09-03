@@ -10,12 +10,13 @@
 # PURPOSE.
 # See the Mulan PSL v2 for more details.
 # ******************************************************************************/
-from datetime import datetime, timedelta
 import time
+from datetime import datetime, timedelta
+
 import jwt
 from jwt.exceptions import ExpiredSignatureError
-from vulcanus.conf import configuration
 
+from vulcanus.conf import configuration
 
 __all__ = ["generate_token", "decode_token", "get_timedelta"]
 
@@ -50,21 +51,16 @@ def generate_token(unique_iden, minutes=20, **kwargs):
     """
     if not unique_iden:
         return ValueError("A unique identifier is missing")
-    token_body = {
-        "iat": int(time.time()),
-        "exp": get_timedelta(20),
-    }
+    token_body = {"iat": int(time.time()), "exp": get_timedelta(20), "sub": unique_iden}
     if minutes and minutes != 20:
         token_body["exp"] = get_timedelta(minutes)
-    token_body.update(kwargs)
+    for jwt_key in set(kwargs.keys()).intersection(set(["iss", "scope", "jti", "aud"])):
+        token_body[jwt_key] = kwargs[jwt_key]
     try:
-        token_body["key"] = unique_iden
-        token_body["create_time"] = time.localtime()
         jwt_token = jwt.encode(
             token_body,
             configuration.individuation.private_key,
             algorithm="HS256",
-            headers=dict(alg="HS256"),
         )
         if isinstance(jwt_token, bytes):
             jwt_token = jwt_token.decode("utf-8")
@@ -88,7 +84,9 @@ def decode_token(token):
     if not token:
         raise ValueError("Please enter a valid token")
     try:
-        return jwt.decode(token, configuration.individuation.private_key, algorithms=["HS256"])
+        return jwt.decode(
+            token, configuration.individuation.private_key, algorithms=["HS256"], options=dict(verify_aud=False)
+        )
     except ExpiredSignatureError:
         raise ExpiredSignatureError("Signature has expired")
     except Exception:
