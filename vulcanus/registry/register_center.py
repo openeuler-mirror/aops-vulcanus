@@ -107,8 +107,8 @@ class Service:
         services = self._center.get_service(service_name)
         if services is None:
             raise NodeNotFoundError("Service not found")
-        if schema == "http":
-            return f"{schema}://{services['address']}:{services['port']}"
+        schema = "http" if schema == "http" else "https"
+        return f"{schema}://{services['address']}:{services['port']}"
 
     def delete_service(self, service_name: str, recursive: bool = True) -> None:
         """

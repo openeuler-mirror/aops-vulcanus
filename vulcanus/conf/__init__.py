@@ -299,8 +299,10 @@ class ConfigHandle:
         if not data:
             return
 
-        with open(save_path, "wb") as f:
-            f.write(data)
+        file_permissions = 0o644  # 给指定权限
+        file_descriptor = os.open(save_path, os.O_WRONLY | os.O_CREAT | os.O_TRUNC, file_permissions)
+        with os.fdopen(file_descriptor, "wb") as file:
+            file.write(data)
 
         tmp_data = data.decode("utf8")
         if self.is_valid_yaml(tmp_data):
