@@ -224,4 +224,28 @@
     <status_code>2103</status_code>
     <message_en>local cluster no managed data</message_en>
 </code>
+<code label="Task.No.Result.File">
+    <status_code>2201</status_code>
+    <message_en>task result file not found</message_en>
+</code>
+<code label="Task.Start.Failed">
+    <status_code>2202</status_code>
+    <message_en>tasks tart failed</message_en>
+</code>
+<code label="Task.Retry.Running.Task.Error">
+    <status_code>2203</status_code>
+    <message_en>Task retry running task error</message_en>
+</code>
+<code label="Task.Cancel.Not.Running.Task.Error">
+    <status_code>2204</status_code>
+    <message_en>Task cancel not running task error</message_en>
+</code>
+<code label="Task.Dependency.Error">
+    <status_code>2205</status_code>
+    <message_en>Task dependency error</message_en>
+</code>
+<code label="Operation.Wrong.Support.Config">
+    <status_code>2206</status_code>
+    <message_en>Wrong os support config, please check config file on os.</message_en>
+</code>
 </codewrap>

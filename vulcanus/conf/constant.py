@@ -74,6 +74,7 @@ HOSTS_COUNT = "/hosts/count"
 HOSTS_TEMPLATE = "/hosts/template/file"
 HOSTS_GROUP = "/hosts/group"
 ALL_HOST_GROUP_MAP = "/hosts/group/all-host"
+HOSTS_IP_FILTER = "/hosts/ips"
 
 # user service api
 USER_LOGIN = "/accounts/login"
