@@ -155,6 +155,16 @@ class BaseResponse(Resource):
 
     @staticmethod
     def _request_body():
+        def convert_data_type(input_value: str, need_unquote: bool = False):
+            """
+            Converts a string representation of a Python literal to its corresponding data type.
+            """
+            try:
+                data = ast.literal_eval(unquote(input_value)) if need_unquote else ast.literal_eval(input_value)
+            except (ValueError, SyntaxError):
+                data = input_value
+            return data
+
         body = dict()
         if request.method != "GET" and not request.files:
             return request.get_json() or dict()
@@ -164,11 +174,11 @@ class BaseResponse(Resource):
 
         for key, value in request.args.items():
             if (value.startswith("[") or value.startswith("{")) and (value.endswith("]") or value.endswith("}")):
-                body[key] = ast.literal_eval(value)
+                body[key] = convert_data_type(value)
             elif (value.startswith("%5B") and value.endswith("%5D")) or (
                 value.startswith("%7B") and value.endswith("%7D")
             ):
-                body[key] = ast.literal_eval(unquote(value))
+                body[key] = convert_data_type(value, True)
             else:
                 body[key] = value
 
