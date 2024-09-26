@@ -230,7 +230,7 @@
 </code>
 <code label="Task.Start.Failed">
     <status_code>2202</status_code>
-    <message_en>tasks tart failed</message_en>
+    <message_en>task start failed</message_en>
 </code>
 <code label="Task.Retry.Running.Task.Error">
     <status_code>2203</status_code>
