@@ -160,7 +160,7 @@ class BaseResponse(Resource):
             Converts a string representation of a Python literal to its corresponding data type.
             """
             try:
-                data = ast.literal_eval(unquote(input_value)) if need_unquote else ast.literal_eval(input_value)
+                data = json.loads(unquote(input_value)) if need_unquote else ast.literal_eval(input_value)
             except (ValueError, SyntaxError):
                 data = input_value
             return data
