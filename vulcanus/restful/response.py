@@ -22,6 +22,8 @@ from flask import g, jsonify, request
 from flask_restful import Resource
 from jwt.exceptions import ExpiredSignatureError
 from retrying import retry
+from werkzeug.utils import secure_filename
+
 from vulcanus.conf import configuration
 from vulcanus.conf.constant import ADMIN_USER, TIMEOUT, UserRoleType
 from vulcanus.database.proxy import MysqlProxy, RedisProxy
@@ -31,7 +33,6 @@ from vulcanus.restful.resp import make_response, state
 from vulcanus.restful.serialize.validate import validate
 from vulcanus.rsa import load_public_key, verify_signature
 from vulcanus.token import decode_token, generate_token
-from werkzeug.utils import secure_filename
 
 
 class BaseResponse(Resource):
@@ -130,7 +131,6 @@ class BaseResponse(Resource):
         """
         if not token:
             return state.TOKEN_ERROR
-
         try:
             verify_info = decode_token(token)
         except ExpiredSignatureError:
@@ -138,10 +138,10 @@ class BaseResponse(Resource):
         except ValueError:
             return state.TOKEN_ERROR
 
-        cache_token = RedisProxy.redis_connect.get("token_" + verify_info["key"])
+        cache_token = RedisProxy.redis_connect.get("token-" + verify_info["sub"] + "-" + verify_info["aud"])
         if not cache_token or cache_token != token:
             return state.TOKEN_ERROR
-        g.username = verify_info["key"]
+        g.username = verify_info["sub"]
         return state.SUCCEED
 
     @staticmethod
@@ -155,6 +155,16 @@ class BaseResponse(Resource):
 
     @staticmethod
     def _request_body():
+        def convert_data_type(input_value: str, need_unquote: bool = False):
+            """
+            Converts a string representation of a Python literal to its corresponding data type.
+            """
+            try:
+                data = json.loads(unquote(input_value)) if need_unquote else ast.literal_eval(input_value)
+            except (ValueError, SyntaxError):
+                data = input_value
+            return data
+
         body = dict()
         if request.method != "GET" and not request.files:
             return request.get_json() or dict()
@@ -164,11 +174,11 @@ class BaseResponse(Resource):
 
         for key, value in request.args.items():
             if (value.startswith("[") or value.startswith("{")) and (value.endswith("]") or value.endswith("}")):
-                body[key] = ast.literal_eval(value)
+                body[key] = convert_data_type(value)
             elif (value.startswith("%5B") and value.endswith("%5D")) or (
                 value.startswith("%7B") and value.endswith("%7D")
             ):
-                body[key] = ast.literal_eval(unquote(value))
+                body[key] = convert_data_type(value, True)
             else:
                 body[key] = value
 
@@ -202,12 +212,16 @@ class BaseResponse(Resource):
             g.username = request.headers.get("X-Cluster-Username")
             from vulcanus.cache import RedisCacheManage
 
-            if RedisProxy.redis_connect.exists("token_" + g.username):
-                g.headers["Access-Token"] = RedisProxy.redis_connect.get("token_" + g.username)
+            if RedisProxy.redis_connect.exists("token-" + g.username + "-" + configuration.client_id):
+                g.headers["Access-Token"] = RedisProxy.redis_connect.get(
+                    "token-" + g.username + "-" + configuration.client_id
+                )
             else:
-                g.headers["Access-Token"] = generate_token(unique_iden=g.username)
-                RedisProxy.redis_connect.set("token_" + g.username, g.headers["Access-Token"])
-                RedisProxy.redis_connect.expire("token_" + g.username, 60 * 20)
+                g.headers["Access-Token"] = generate_token(unique_iden=g.username, aud=configuration.client_id)
+                RedisProxy.redis_connect.set(
+                    "token-" + g.username + "-" + configuration.client_id, g.headers["Access-Token"]
+                )
+                RedisProxy.redis_connect.expire("token-" + g.username + "-" + configuration.client_id, 60 * 20)
             cache = RedisCacheManage(domain=configuration.domain, redis_client=RedisProxy.redis_connect)
             signature = request.headers.get("X-Signature")
             if g.username == ADMIN_USER:
