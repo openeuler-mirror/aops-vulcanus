@@ -234,7 +234,7 @@ class BaseResponse(Resource):
                 public_key = sub_cluster_user["public_key"] if sub_cluster_user else None
 
             if not public_key or not verify_signature(request_args, signature, load_public_key(public_key)):
-                return request_args, state.PERMESSION_ERROR
+                return request_args, state.PERMISSION_ERROR
             need_token = False
         if schema:
             request_args, pre_verify_result = cls.verify_args(request_args, schema, True)
@@ -344,11 +344,11 @@ class BaseResponse(Resource):
                     return api_view(self, host_id=host_id, *args, **kwargs)
 
                 if not cache.get_user_group_hosts():
-                    return self.response(code=state.PERMESSION_ERROR)
+                    return self.response(code=state.PERMISSION_ERROR)
 
                 host_ids = [host_in for host_ids in cache.all_groups_hosts.values() for host_in in host_ids]
                 if host_id not in host_ids:
-                    return self.response(code=state.PERMESSION_ERROR)
+                    return self.response(code=state.PERMISSION_ERROR)
 
                 return api_view(self, host_id=host_id, *args, **kwargs)
 
