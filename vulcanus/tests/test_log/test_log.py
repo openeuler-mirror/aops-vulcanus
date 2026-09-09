@@ -19,32 +19,62 @@ from unittest.mock import patch, MagicMock
 
 import logging
 
+LOG_DIR = "log_dir"
+LOG_LEVEL = "log_level"
+MAX_BYTES = "max_bytes"
+BACKUP_COUNT = "backup_count"
+
 
 class TestLoggerCheckInteger(unittest.TestCase):
-    """Tests for Logger.__check_integer static method."""
+    """Tests for Logger parameter validation via check()."""
 
-    def test_check_integer_valid(self):
-        """Test __check_integer does not raise for valid int."""
+    def test_check_valid_params(self):
+        """Test Logger does not raise for valid integer params."""
         from vulcanus.log.log import Logger
-        Logger.__check_integer(1024, "test_param")
+        mock_config = MagicMock()
+        mock_config.log.log_dir = tempfile.mkdtemp()
+        mock_config.log.log_level = "INFO"
+        mock_config.log.max_bytes = 1024
+        mock_config.log.backup_count = 1
+        with patch("vulcanus.log.log.configuration", mock_config):
+            logger_obj = Logger()
+            logger_obj.check()
 
-    def test_check_integer_zero(self):
-        """Test __check_integer raises ValueError for zero."""
+    def test_check_zero_max_bytes(self):
+        """Test Logger raises ValueError for zero max_bytes."""
         from vulcanus.log.log import Logger
-        with self.assertRaises(ValueError):
-            Logger.__check_integer(0, "test_param")
+        mock_config = MagicMock()
+        mock_config.log.log_dir = tempfile.mkdtemp()
+        mock_config.log.log_level = "INFO"
+        mock_config.log.max_bytes = 0
+        mock_config.log.backup_count = 1
+        with patch("vulcanus.log.log.configuration", mock_config):
+            with self.assertRaises(ValueError):
+                Logger()
 
-    def test_check_integer_negative(self):
-        """Test __check_integer raises ValueError for negative."""
+    def test_check_negative_backup(self):
+        """Test Logger raises ValueError for negative backup_count."""
         from vulcanus.log.log import Logger
-        with self.assertRaises(ValueError):
-            Logger.__check_integer(-1, "test_param")
+        mock_config = MagicMock()
+        mock_config.log.log_dir = tempfile.mkdtemp()
+        mock_config.log.log_level = "INFO"
+        mock_config.log.max_bytes = 1024
+        mock_config.log.backup_count = -1
+        with patch("vulcanus.log.log.configuration", mock_config):
+            with self.assertRaises(ValueError):
+                Logger()
 
-    def test_check_integer_non_int(self):
-        """Test __check_integer raises ValueError for non-int."""
+    def test_check_non_int_max_bytes(self):
+        """Test Logger raises ValueError for non-int max_bytes."""
         from vulcanus.log.log import Logger
-        with self.assertRaises(ValueError):
-            Logger.__check_integer("not_int", "test_param")
+        mock_config = MagicMock()
+        mock_config.log.log_dir = tempfile.mkdtemp()
+        mock_config.log.log_level = "INFO"
+        mock_config.log.max_bytes = "not_int"
+        mock_config.log.backup_count = 1
+        with patch("vulcanus.log.log.configuration", mock_config):
+            with self.assertRaises(ValueError):
+                Logger()
 
 
 class TestLoggerGetLogger(unittest.TestCase):
