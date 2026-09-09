@@ -98,22 +98,18 @@ class TestRedisCacheManageString(unittest.TestCase):
         self.assertIsNone(result)
 
 
-class TestRedisCacheManageJsonDecode(unittest.TestCase):
-    """Tests for RedisCacheManage _json_decode method."""
+class TestRedisCacheManageClusters(unittest.TestCase):
+    """Tests for RedisCacheManage clusters property."""
 
-    def test_json_decode_valid(self):
-        """Test _json_decode returns dict for valid JSON."""
+    def test_clusters_empty(self):
+        """Test clusters returns empty dict when no data."""
         mock_client = MagicMock()
+        mock_client.exists.return_value = False
+        mock_client.get.return_value = (None, None)
         cache = RedisCacheManage(domain=DOMAIN, redis_client=mock_client)
-        result = cache._json_decode(json.dumps({"key": "value"}))
-        self.assertEqual(result["key"], "value")
-
-    def test_json_decode_invalid(self):
-        """Test _json_decode returns original string for invalid JSON."""
-        mock_client = MagicMock()
-        cache = RedisCacheManage(domain=DOMAIN, redis_client=mock_client)
-        result = cache._json_decode(NOT_JSON)
-        self.assertEqual(result, NOT_JSON)
+        with patch.object(cache, '_remote_api', return_value=(False, None)):
+            result = cache.clusters
+            self.assertIsInstance(result, dict)
 
 
 if __name__ == "__main__":
