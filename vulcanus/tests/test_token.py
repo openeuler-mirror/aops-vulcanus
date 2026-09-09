@@ -53,7 +53,7 @@ class TestGenerateToken(unittest.TestCase):
         mock_config.individuation.private_key = TEST_KEY
         token = generate_token(TEST_USER)
         self.assertIsInstance(token, str)
-        self.assertTrue(len(token) > 0)
+        self.assertGreater(len(token), 0)
 
     @patch("vulcanus.token.configuration")
     def test_generate_token_with_aud(self, mock_config):
