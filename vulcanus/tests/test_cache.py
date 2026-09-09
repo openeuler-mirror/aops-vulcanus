@@ -21,6 +21,10 @@ from vulcanus.cache import RedisCacheManage
 DOMAIN = "localhost:8080"
 TEST_KEY = "test_key"
 TEST_USERNAME = "testuser"
+FIELD = "field"
+VAL = "value"
+TEST_VAL = "test_value"
+NOT_JSON = "not json"
 
 
 class TestRedisCacheManageInit(unittest.TestCase):
@@ -59,10 +63,10 @@ class TestRedisCacheManageHash(unittest.TestCase):
         """Test hash returns data when key exists."""
         mock_client = MagicMock()
         mock_client.exists.return_value = True
-        mock_client.hgetall.return_value = {"field": "value"}
+        mock_client.hgetall.return_value = {FIELD: VAL}
         cache = RedisCacheManage(domain=DOMAIN, redis_client=mock_client)
         result = cache.hash(TEST_KEY)
-        self.assertEqual(result, {"field": "value"})
+        self.assertEqual(result, {FIELD: VAL})
 
     def test_hash_not_exists(self):
         """Test hash returns None when key doesn't exist."""
@@ -80,10 +84,10 @@ class TestRedisCacheManageString(unittest.TestCase):
         """Test string returns value when key exists."""
         mock_client = MagicMock()
         mock_client.exists.return_value = True
-        mock_client.get.return_value = "test_value"
+        mock_client.get.return_value = TEST_VAL
         cache = RedisCacheManage(domain=DOMAIN, redis_client=mock_client)
         result = cache.string(TEST_KEY)
-        self.assertEqual(result, "test_value")
+        self.assertEqual(result, TEST_VAL)
 
     def test_string_not_exists(self):
         """Test string returns None when key doesn't exist."""
@@ -108,8 +112,8 @@ class TestRedisCacheManageJsonDecode(unittest.TestCase):
         """Test _json_decode returns original string for invalid JSON."""
         mock_client = MagicMock()
         cache = RedisCacheManage(domain=DOMAIN, redis_client=mock_client)
-        result = cache._json_decode("not json")
-        self.assertEqual(result, "not json")
+        result = cache._json_decode(NOT_JSON)
+        self.assertEqual(result, NOT_JSON)
 
 
 if __name__ == "__main__":
