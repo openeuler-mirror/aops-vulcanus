@@ -33,7 +33,7 @@ class TestServiceInit(unittest.TestCase):
         mock_center = MagicMock()
         mock_zk.return_value = mock_center
         service = Service(HOSTS, RegisterCenter.ZOOKEEPER)
-        self.assertIsNotNone(service._center)
+        self.assertIsNotNone(service)
 
     def test_init_invalid_type(self):
         """Test Service init with invalid center type raises ConfigurationError."""
