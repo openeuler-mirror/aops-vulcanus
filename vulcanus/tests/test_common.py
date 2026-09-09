@@ -21,6 +21,7 @@ from vulcanus.common import ValidateUtils, TimeUtils, ConfigFileParse, hash_valu
 
 TEST_PATH = "/tmp/test_common_file"
 TEST_TIME = "20240115-10:30:00"
+HASH_INPUT = "hello"
 
 
 class TestValidateUtils(unittest.TestCase):
@@ -148,8 +149,8 @@ class TestHashValue(unittest.TestCase):
 
     def test_hash_value_consistent(self):
         """Test hash_value returns same hash for same input."""
-        h1 = hash_value("hello")
-        h2 = hash_value("hello")
+        h1 = hash_value(HASH_INPUT)
+        h2 = hash_value(HASH_INPUT)
         self.assertEqual(h1, h2)
 
 
