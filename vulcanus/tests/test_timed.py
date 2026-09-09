@@ -21,6 +21,11 @@ from vulcanus.timed import TimedTask, TimedTaskManager
 
 TASK_NAME = "test_task"
 TASK_TYPE = "test_type"
+TRIGGER_CRON = "cron"
+TRIGGER_INTERVAL = "interval"
+TRIGGER_INVALID = "invalid"
+DAY_OF_WEEK = "day_of_week"
+HOUR = "hour"
 
 
 class MockTimedTask(TimedTask):
@@ -37,7 +42,7 @@ class TestTimedTaskCheck(unittest.TestCase):
         """Test check returns True for valid cron config."""
         config = {
             "task": TASK_NAME,
-            "timed": {"trigger": "cron", "day_of_week": "0-6", "hour": "3"},
+            "timed": {TRIGGER_CRON: TRIGGER_CRON, DAY_OF_WEEK: "0-6", HOUR: "3"},
         }
         task = MockTimedTask(config)
         self.assertTrue(task.check())
@@ -46,7 +51,7 @@ class TestTimedTaskCheck(unittest.TestCase):
         """Test check returns True for valid interval config."""
         config = {
             "task": TASK_NAME,
-            "timed": {"trigger": "interval", "minutes": 30},
+            "timed": {TRIGGER_INTERVAL: TRIGGER_INTERVAL, "minutes": 30},
         }
         task = MockTimedTask(config)
         self.assertTrue(task.check())
@@ -55,7 +60,7 @@ class TestTimedTaskCheck(unittest.TestCase):
         """Test check returns False for invalid trigger."""
         config = {
             "task": TASK_NAME,
-            "timed": {"trigger": "invalid", "day_of_week": "0-6", "hour": "3"},
+            "timed": {TRIGGER_INVALID: TRIGGER_INVALID, DAY_OF_WEEK: "0-6", HOUR: "3"},
         }
         task = MockTimedTask(config)
         self.assertFalse(task.check())
@@ -64,7 +69,7 @@ class TestTimedTaskCheck(unittest.TestCase):
         """Test check returns False when required fields missing."""
         config = {
             "task": TASK_NAME,
-            "timed": {"trigger": "cron"},
+            "timed": {TRIGGER_CRON: TRIGGER_CRON},
         }
         task = MockTimedTask(config)
         self.assertFalse(task.check())
@@ -76,21 +81,21 @@ class TestTimedTaskManagerParseConfig(unittest.TestCase):
     def test_parse_config_valid(self):
         """Test _parse_config parses valid YAML config."""
         yaml_content = (
-            "- task: test_task\n"
-            "  type: test_type\n"
+            f"- task: {TASK_NAME}\n"
+            f"  type: {TASK_TYPE}\n"
             "  enable: true\n"
             "  timed:\n"
-            "    trigger: cron\n"
-            "    day_of_week: 0-6\n"
-            "    hour: 3\n"
+            f"    trigger: {TRIGGER_CRON}\n"
+            f"    {DAY_OF_WEEK}: 0-6\n"
+            f"    {HOUR}: 3\n"
         )
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write(yaml_content)
             f.flush()
             try:
                 result = TimedTaskManager._parse_config(f.name)
-                self.assertIn("test_task", result)
-                self.assertEqual(result["test_task"]["type"], "test_type")
+                self.assertIn(TASK_NAME, result)
+                self.assertEqual(result[TASK_NAME]["type"], TASK_TYPE)
             finally:
                 os.unlink(f.name)
 
