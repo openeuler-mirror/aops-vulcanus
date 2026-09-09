@@ -76,10 +76,10 @@ class TestTimedTaskCheck(unittest.TestCase):
 
 
 class TestTimedTaskManagerParseConfig(unittest.TestCase):
-    """Tests for TimedTaskManager._parse_config method."""
+    """Tests for TimedTaskManager config parsing via init."""
 
     def test_parse_config_valid(self):
-        """Test _parse_config parses valid YAML config."""
+        """Test TimedTaskManager init parses valid YAML config."""
         yaml_content = (
             f"- task: {TASK_NAME}\n"
             f"  type: {TASK_TYPE}\n"
@@ -93,25 +93,25 @@ class TestTimedTaskManagerParseConfig(unittest.TestCase):
             f.write(yaml_content)
             f.flush()
             try:
-                result = TimedTaskManager._parse_config(f.name)
-                self.assertIn(TASK_NAME, result)
-                self.assertEqual(result[TASK_NAME]["type"], TASK_TYPE)
+                manager = TimedTaskManager(config_path=f.name)
+                self.assertIn(TASK_NAME, manager.timed_config)
+                self.assertEqual(manager.timed_config[TASK_NAME]["type"], TASK_TYPE)
             finally:
                 os.unlink(f.name)
 
     def test_parse_config_nonexistent(self):
-        """Test _parse_config raises FileNotFoundError for missing file."""
+        """Test TimedTaskManager init raises FileNotFoundError for missing file."""
         with self.assertRaises(FileNotFoundError):
-            TimedTaskManager._parse_config("/nonexistent/file.yaml")
+            TimedTaskManager(config_path="/nonexistent/file.yaml")
 
     def test_parse_config_empty(self):
-        """Test _parse_config returns empty dict for empty YAML."""
+        """Test TimedTaskManager init returns empty dict for empty YAML."""
         with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             f.write("[]\n")
             f.flush()
             try:
-                result = TimedTaskManager._parse_config(f.name)
-                self.assertEqual(result, {})
+                manager = TimedTaskManager(config_path=f.name)
+                self.assertEqual(manager.timed_config, {})
             finally:
                 os.unlink(f.name)
 
