@@ -76,7 +76,8 @@ class TestTimeUtils(unittest.TestCase):
         """Test time_transfer with None end_time."""
         result = TimeUtils.time_transfer(TEST_TIME, None)
         self.assertIsNotNone(result)
-        self.assertEqual(result[1], int(__import__("time").time()))
+        import time as time_mod
+        self.assertEqual(result[1], int(time_mod.time()))
 
     def test_time_transfer_invalid_format(self):
         """Test time_transfer returns None for invalid format."""
