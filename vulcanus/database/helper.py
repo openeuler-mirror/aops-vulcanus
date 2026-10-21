@@ -17,6 +17,7 @@ Description: functions about of database proxy
 """
 import time
 import math
+import re
 from sqlalchemy import create_engine
 from sqlalchemy.sql.expression import desc, asc
 
@@ -112,7 +113,12 @@ def timestr_unix(time_str):
     """
     time_format_with_hill = "%Y-%m-%dT%H:%M:%S.%f%z"
 
-    time_str = time_str[:26] + time_str[-6:]
+    # normalize fractional seconds to 6 digits, keep the timezone offset intact
+    match = re.search(r"\.(\d+)", time_str)
+    if match:
+        fraction = match.group(1)[:6].ljust(6, "0")
+        time_str = time_str[: match.start(1)] + fraction + time_str[match.end(1) :]
+
     time_format = time.strptime(time_str, time_format_with_hill)
     return int(time.mktime(time_format))
 
