@@ -68,7 +68,7 @@ class TestConnectDatabaseDecorator(unittest.TestCase):
     def test_connect_database_no_exception(self):
         class Demo:
             @connect_database(status=state.DATABASE_CONNECT_ERROR, return_value=None)
-            def func(self_):
+            def func(self):
                 return state.SUCCEED, "data"
 
         self.assertEqual(Demo().func(), (state.SUCCEED, "data"))
@@ -76,7 +76,7 @@ class TestConnectDatabaseDecorator(unittest.TestCase):
     def test_connect_database_connection_failed(self):
         class Demo:
             @connect_database(status=state.DATABASE_CONNECT_ERROR)
-            def func(self_):
+            def func(self):
                 raise DatabaseConnectionFailed("connect failed")
 
         self.assertEqual(Demo().func(), state.DATABASE_CONNECT_ERROR)
@@ -84,7 +84,7 @@ class TestConnectDatabaseDecorator(unittest.TestCase):
     def test_connect_database_connection_failed_with_return_value(self):
         class Demo:
             @connect_database(status=state.DATABASE_CONNECT_ERROR, return_value="mock value")
-            def func(self_):
+            def func(self):
                 raise DatabaseConnectionFailed("connect failed")
 
         self.assertEqual(Demo().func(), (state.DATABASE_CONNECT_ERROR, "mock value"))
@@ -109,30 +109,24 @@ class TestMysqlProxy(unittest.TestCase):
             MysqlProxy()
 
     def test_connect_success(self):
-        with patch.object(MysqlProxy, "_create_session", return_value=None):
+        with patch("vulcanus.database.proxy.sessionmaker") as mock_sessionmaker:
+            mock_sessionmaker.return_value.return_value = FakeSession()
             self.assertTrue(self.mysql_proxy.connect())
+            self.assertIsNotNone(self.mysql_proxy.session)
 
     def test_connect_fail(self):
-        with patch.object(MysqlProxy, "_create_session", side_effect=DatabaseConnectionFailed("error")):
-            self.assertFalse(self.mysql_proxy.connect())
-
-    def test_create_session_success(self):
-        self.mysql_proxy._create_session()
-        self.assertIsNotNone(self.mysql_proxy.session)
-
-    def test_create_session_fail(self):
         with patch("vulcanus.database.proxy.sessionmaker") as mock_sessionmaker:
             mock_sessionmaker.return_value.configure.side_effect = SQLAlchemyError("error")
-            with self.assertRaises(DatabaseConnectionFailed):
-                self.mysql_proxy._create_session()
+            self.assertFalse(self.mysql_proxy.connect())
 
     def test_enter_exit(self):
-        with patch.object(MysqlProxy, "_create_session", return_value=None):
+        with patch("vulcanus.database.proxy.sessionmaker") as mock_sessionmaker:
+            mock_sessionmaker.return_value.return_value = FakeSession()
             proxy = self.mysql_proxy.__enter__()
             self.assertEqual(proxy, self.mysql_proxy)
 
-        self.mysql_proxy.__exit__(None, None, None)
-        self.assertTrue(self.mysql_proxy.session.closed)
+            self.mysql_proxy.__exit__(None, None, None)
+            self.assertTrue(self.mysql_proxy.session.closed)
 
     def test_exit_with_attribute_error(self):
         error = AttributeError("error")
@@ -388,8 +382,7 @@ class TestPromDbProxy(unittest.TestCase):
 
     def test_init_success(self):
         proxy = PromDbProxy(host="127.0.0.1", port=9090)
-        self.assertEqual(proxy._host, "127.0.0.1")
-        self.assertEqual(proxy._port, 9090)
+        self.mock_prom_connect.assert_called_once_with(url="http://127.0.0.1:9090", disable_ssl=True)
 
     def test_init_connection_failed(self):
         self.mock_prom.check_prometheus_connection.return_value = False
@@ -462,7 +455,7 @@ class TestRedisProxy(unittest.TestCase):
         with patch("vulcanus.database.proxy.Redis") as mock_redis:
             mock_redis.return_value.ping.return_value = True
             proxy = RedisProxy.__wrapped__(host="127.0.0.1", port=6379)
-            self.assertEqual(proxy._host, "127.0.0.1")
+            mock_redis.assert_called_once()
             mock_redis.return_value.ping.assert_called_once()
 
     def test_init_connection_failed(self):
