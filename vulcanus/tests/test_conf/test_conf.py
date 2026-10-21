@@ -17,10 +17,11 @@ Description:
 """
 import os
 import unittest
+from unittest.mock import patch
 
 from vulcanus.conf import Config
 from .for_test_conf import global_config
-from vulcanus.compare import compare_two_object
+from vulcanus.common import ValidateUtils
 
 
 class TestConf(unittest.TestCase):
@@ -29,8 +30,10 @@ class TestConf(unittest.TestCase):
 
     def test_conf_read(self):
         config_path = os.path.join(self.config_dir, "for_test_conf/config.ini")
-        conf = Config(config_path, global_config)
         config = [{"TEST1": 3, "TEST2": 2, "TEST3": 4}, {"A": 1, "B": 2, "C": True}]
 
-        self.assertTrue(compare_two_object(config[0], conf.test))
-        self.assertTrue(compare_two_object(config[1], conf.test2))
+        with patch("vulcanus.conf.Config._load_private_config"):
+            conf = Config(config_path, global_config)
+
+        self.assertTrue(ValidateUtils.compare_two_object(config[0], conf.test))
+        self.assertTrue(ValidateUtils.compare_two_object(config[1], conf.test2))
