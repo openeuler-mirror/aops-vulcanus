@@ -409,10 +409,10 @@ class TestPromDbProxy(unittest.TestCase):
         self.assertTrue(proxy.connected)
 
     def test_connected_false_on_error(self):
-        from requests.exceptions import ConnectionError
+        from requests.exceptions import ConnectionError as RequestsConnectionError
 
         proxy = PromDbProxy(host="127.0.0.1", port=9090)
-        self.mock_prom.check_prometheus_connection.side_effect = ConnectionError("error")
+        self.mock_prom.check_prometheus_connection.side_effect = RequestsConnectionError("error")
         self.assertFalse(proxy.connected)
 
     def test_query_success(self):
