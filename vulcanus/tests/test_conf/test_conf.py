@@ -19,9 +19,10 @@ import os
 import unittest
 from unittest.mock import patch
 
-from vulcanus.conf import Config
-from .for_test_conf import global_config
 from vulcanus.common import ValidateUtils
+from vulcanus.conf import Config
+
+from .for_test_conf import global_config
 
 
 class TestConf(unittest.TestCase):
