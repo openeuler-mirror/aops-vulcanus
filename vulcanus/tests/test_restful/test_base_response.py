@@ -169,10 +169,11 @@ class TestVerifyUploadRequest(BaseTest):
     @patch("vulcanus.restful.response.BaseResponse.verify_token", return_value=state.SUCCEED)
     @patch("vulcanus.restful.response.request")
     def test_verify_upload_request_save_file(self, mock_request, mock_verify_token):
-        import os
         import tempfile
 
-        save_path = tempfile.mkdtemp()
+        temp_dir = tempfile.TemporaryDirectory()
+        self.addCleanup(temp_dir.cleanup)
+        save_path = temp_dir.name
         file = MagicMock()
         file.filename = "test.txt"
         mock_request.get_json.return_value = {}
