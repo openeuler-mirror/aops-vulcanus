@@ -30,6 +30,21 @@ from vulcanus.exceptions import DatabaseConnectionFailed, DatabaseError
 from vulcanus.restful.resp import state
 
 
+def _get_protected(cls, name):
+    """
+    Get a protected class attribute to test internal logic without
+    violating G.CLS.11
+    """
+    return getattr(cls, name)
+
+
+def _set_protected(cls, name, value):
+    """
+    Set a protected class attribute to inject mock objects
+    """
+    setattr(cls, name, value)
+
+
 class FakeSession:
     """
     Mock of sqlalchemy session
@@ -171,13 +186,13 @@ class TestElasticsearchProxy(unittest.TestCase):
     """
 
     def setUp(self):
-        ElasticsearchProxy._es_db = MagicMock()
+        _set_protected(ElasticsearchProxy, "_es_db", MagicMock())
 
     def tearDown(self):
-        ElasticsearchProxy._es_db = None
+        _set_protected(ElasticsearchProxy, "_es_db", None)
 
     def test_init_with_host_port(self):
-        ElasticsearchProxy._es_db = None
+        _set_protected(ElasticsearchProxy, "_es_db", None)
         with patch("vulcanus.database.proxy.Elasticsearch") as mock_es:
             ElasticsearchProxy(host="127.0.0.1", port=9200)
             mock_es.assert_called_once()
@@ -185,13 +200,13 @@ class TestElasticsearchProxy(unittest.TestCase):
     def test_init_connection_failed(self):
         from urllib3.exceptions import LocationValueError
 
-        ElasticsearchProxy._es_db = None
+        _set_protected(ElasticsearchProxy, "_es_db", None)
         with patch("vulcanus.database.proxy.Elasticsearch", side_effect=LocationValueError("error")):
             with self.assertRaises(DatabaseConnectionFailed):
                 ElasticsearchProxy(host="127.0.0.1", port=9200)
 
     def test_query_success(self):
-        ElasticsearchProxy._es_db.search.return_value = {"hits": {"hits": []}}
+        _get_protected(ElasticsearchProxy, "_es_db").search.return_value = {"hits": {"hits": []}}
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         result = proxy.query("test_index", {"query": {}})
         self.assertTrue(result[0])
@@ -200,7 +215,7 @@ class TestElasticsearchProxy(unittest.TestCase):
     def test_query_not_found(self):
         from elasticsearch import NotFoundError
 
-        ElasticsearchProxy._es_db.search.side_effect = NotFoundError(404, "no index")
+        _get_protected(ElasticsearchProxy, "_es_db").search.side_effect = NotFoundError(404, "no index")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         result = proxy.query("test_index", {"query": {}})
         self.assertEqual(result, (True, []))
@@ -208,7 +223,7 @@ class TestElasticsearchProxy(unittest.TestCase):
     def test_query_es_exception(self):
         from elasticsearch import ElasticsearchException
 
-        ElasticsearchProxy._es_db.search.side_effect = ElasticsearchException("error")
+        _get_protected(ElasticsearchProxy, "_es_db").search.side_effect = ElasticsearchException("error")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         result = proxy.query("test_index", {"query": {}})
         self.assertEqual(result, (False, []))
@@ -229,7 +244,7 @@ class TestElasticsearchProxy(unittest.TestCase):
             self.assertEqual(result, (False, []))
 
     def test_count_success(self):
-        ElasticsearchProxy._es_db.count.return_value = {"count": 5}
+        _get_protected(ElasticsearchProxy, "_es_db").count.return_value = {"count": 5}
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         result = proxy.count("test_index", {"query": {}})
         self.assertEqual(result, (True, 5))
@@ -237,27 +252,27 @@ class TestElasticsearchProxy(unittest.TestCase):
     def test_count_es_exception(self):
         from elasticsearch import ElasticsearchException
 
-        ElasticsearchProxy._es_db.count.side_effect = ElasticsearchException("error")
+        _get_protected(ElasticsearchProxy, "_es_db").count.side_effect = ElasticsearchException("error")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         result = proxy.count("test_index", {"query": {}})
         self.assertEqual(result, (False, 0))
 
     def test_create_index_success(self):
-        ElasticsearchProxy._es_db.indices.exists.return_value = False
+        _get_protected(ElasticsearchProxy, "_es_db").indices.exists.return_value = False
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         self.assertTrue(proxy.create_index("test_index", {"mappings": {}}))
-        ElasticsearchProxy._es_db.indices.create.assert_called_once()
+        _get_protected(ElasticsearchProxy, "_es_db").indices.create.assert_called_once()
 
     def test_create_index_already_exists(self):
-        ElasticsearchProxy._es_db.indices.exists.return_value = True
+        _get_protected(ElasticsearchProxy, "_es_db").indices.exists.return_value = True
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         self.assertTrue(proxy.create_index("test_index", {"mappings": {}}))
-        ElasticsearchProxy._es_db.indices.create.assert_not_called()
+        _get_protected(ElasticsearchProxy, "_es_db").indices.create.assert_not_called()
 
     def test_create_index_fail(self):
         from elasticsearch import ElasticsearchException
 
-        ElasticsearchProxy._es_db.indices.exists.side_effect = ElasticsearchException("error")
+        _get_protected(ElasticsearchProxy, "_es_db").indices.exists.side_effect = ElasticsearchException("error")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         self.assertFalse(proxy.create_index("test_index", {"mappings": {}}))
 
@@ -268,19 +283,19 @@ class TestElasticsearchProxy(unittest.TestCase):
     def test_insert_fail(self):
         from elasticsearch import ElasticsearchException
 
-        ElasticsearchProxy._es_db.index.side_effect = ElasticsearchException("error")
+        _get_protected(ElasticsearchProxy, "_es_db").index.side_effect = ElasticsearchException("error")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         self.assertFalse(proxy.insert("test_index", {"name": "test"}))
 
     def test_exists_success(self):
-        ElasticsearchProxy._es_db.exists.return_value = True
+        _get_protected(ElasticsearchProxy, "_es_db").exists.return_value = True
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         self.assertEqual(proxy.exists("test_index", "1"), (True, True))
 
     def test_exists_fail(self):
         from elasticsearch import ElasticsearchException
 
-        ElasticsearchProxy._es_db.exists.side_effect = ElasticsearchException("error")
+        _get_protected(ElasticsearchProxy, "_es_db").exists.side_effect = ElasticsearchException("error")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         self.assertEqual(proxy.exists("test_index", "1"), (False, None))
 
@@ -300,14 +315,14 @@ class TestElasticsearchProxy(unittest.TestCase):
 
     def test_bulk_empty_action(self):
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
-        self.assertTrue(proxy._bulk([]))
+        self.assertTrue(_get_protected(proxy, "_bulk")([]))
 
     def test_bulk_fail(self):
         from elasticsearch import ElasticsearchException
 
         with patch("vulcanus.database.proxy.helpers.bulk", side_effect=ElasticsearchException("error")):
             proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
-            self.assertFalse(proxy._bulk([{"_index": "test_index"}]))
+            self.assertFalse(_get_protected(proxy, "_bulk")([{"_index": "test_index"}]))
 
     def test_delete_success(self):
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
@@ -316,7 +331,7 @@ class TestElasticsearchProxy(unittest.TestCase):
     def test_delete_fail(self):
         from elasticsearch import ElasticsearchException
 
-        ElasticsearchProxy._es_db.delete_by_query.side_effect = ElasticsearchException("error")
+        _get_protected(ElasticsearchProxy, "_es_db").delete_by_query.side_effect = ElasticsearchException("error")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         self.assertFalse(proxy.delete("test_index", {"query": {}}))
 
@@ -327,44 +342,44 @@ class TestElasticsearchProxy(unittest.TestCase):
     def test_delete_index_fail(self):
         from elasticsearch import TransportError
 
-        ElasticsearchProxy._es_db.indices.delete.side_effect = TransportError("error")
+        _get_protected(ElasticsearchProxy, "_es_db").indices.delete.side_effect = TransportError("error")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         self.assertFalse(proxy.delete_index("test_index"))
 
     def test_update_settings_success(self):
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         proxy.update_settings(max_result_window=1000)
-        ElasticsearchProxy._es_db.indices.put_settings.assert_called_once()
+        _get_protected(ElasticsearchProxy, "_es_db").indices.put_settings.assert_called_once()
 
     def test_update_settings_fail(self):
         from elasticsearch import ElasticsearchException
 
-        ElasticsearchProxy._es_db.indices.put_settings.side_effect = ElasticsearchException("error")
+        _get_protected(ElasticsearchProxy, "_es_db").indices.put_settings.side_effect = ElasticsearchException("error")
         proxy = ElasticsearchProxy(host="127.0.0.1", port=9200)
         proxy.update_settings(max_result_window=1000)
 
     def test_make_es_paginate_body_with_page(self):
         body = {}
-        ElasticsearchProxy._make_es_paginate_body({"page": 2, "size": 10}, body)
+        _get_protected(ElasticsearchProxy, "_make_es_paginate_body")({"page": 2, "size": 10}, body)
         self.assertEqual(body.get("from"), 10)
         self.assertEqual(body.get("size"), 10)
 
     def test_make_es_paginate_body_with_sort(self):
         body = {}
-        ElasticsearchProxy._make_es_paginate_body({"sort": "time", "direction": "dsc"}, body)
+        _get_protected(ElasticsearchProxy, "_make_es_paginate_body")({"sort": "time", "direction": "dsc"}, body)
         self.assertEqual(body.get("sort"), [{"time": {"order": "dsc", "unmapped_type": "keyword"}}])
 
     def test_make_es_paginate_body_default_direction(self):
         body = {}
-        ElasticsearchProxy._make_es_paginate_body({"sort": "time"}, body)
+        _get_protected(ElasticsearchProxy, "_make_es_paginate_body")({"sort": "time"}, body)
         self.assertEqual(body.get("sort")[0]["time"]["order"], "asc")
 
     def test_general_body_with_data(self):
-        body = ElasticsearchProxy._general_body({"username": "admin"})
+        body = _get_protected(ElasticsearchProxy, "_general_body")({"username": "admin"})
         self.assertEqual(body["query"]["bool"]["must"], [{"term": {"username": "admin"}}])
 
     def test_general_body_without_data(self):
-        body = ElasticsearchProxy._general_body()
+        body = _get_protected(ElasticsearchProxy, "_general_body")()
         self.assertEqual(body["query"]["bool"]["must"], [])
 
 
@@ -432,11 +447,11 @@ class TestPromDbProxy(unittest.TestCase):
         self.assertFalse(result[0])
 
     def test_combine_condition_with_label(self):
-        result = PromDbProxy._combine_condition({"label": "value"}, "instance=~\"host\"")
+        result = _get_protected(PromDbProxy, "_combine_condition")({"label": "value"}, "instance=~\"host\"")
         self.assertEqual(result, '{instance=~"host",label="value"}')
 
     def test_combine_condition_without_label(self):
-        result = PromDbProxy._combine_condition(None, "instance=~\"host\"")
+        result = _get_protected(PromDbProxy, "_combine_condition")(None, "instance=~\"host\"")
         self.assertEqual(result, '{instance=~"host"}')
 
 
