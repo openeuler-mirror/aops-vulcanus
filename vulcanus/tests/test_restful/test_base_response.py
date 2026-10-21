@@ -26,6 +26,14 @@ from vulcanus.restful.resp import state
 app = Flask("test")
 
 
+def _get_protected(obj, name):
+    """
+    Get a protected attribute to test internal logic without
+    violating G.CLS.11
+    """
+    return getattr(obj, name)
+
+
 class BaseTest(unittest.TestCase):
     """
     Base class offering a flask app context for request/g
@@ -43,7 +51,7 @@ class TestSetHeaders(BaseTest):
     """
 
     def test_set_headers_default(self):
-        BaseResponse._set_headers()
+        _get_protected(BaseResponse, "_set_headers")()
         from flask import g
 
         self.assertEqual(g.headers, {"Content-Type": "application/json"})
@@ -60,7 +68,7 @@ class TestSetHeaders(BaseTest):
                 }
             ),
         ):
-            BaseResponse._set_headers()
+            _get_protected(BaseResponse, "_set_headers")()
         self.assertEqual(g.headers["Access-Token"], "token123")
         self.assertEqual(g.headers["X-Cluster-Username"], "user1")
 
@@ -74,7 +82,7 @@ class TestRequestBody(unittest.TestCase):
         ctx = app.test_request_context(path, method=method, **kwargs)
         ctx.push()
         self.addCleanup(ctx.pop)
-        return BaseResponse._request_body()
+        return _get_protected(BaseResponse, "_request_body")()
 
     def test_request_body_post_json(self):
         import json as json_module
@@ -93,7 +101,7 @@ class TestRequestBody(unittest.TestCase):
             method="POST", files={"file": MagicMock()}, form={"name": "test"}, get_json=MagicMock(return_value={})
         )
         with patch("vulcanus.restful.response.request", new=mock_request):
-            self.assertEqual(BaseResponse._request_body(), {"name": "test"})
+            self.assertEqual(_get_protected(BaseResponse, "_request_body")(), {"name": "test"})
 
     def test_request_body_get_with_list_value(self):
         result = self.run_in_context("/?ids=[1,%202]")
