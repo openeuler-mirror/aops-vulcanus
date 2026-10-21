@@ -24,6 +24,7 @@ TASK_TYPE = "test_type"
 TRIGGER_CRON = "cron"
 TRIGGER_INTERVAL = "interval"
 TRIGGER_INVALID = "invalid"
+TRIGGER = "trigger"
 DAY_OF_WEEK = "day_of_week"
 HOUR = "hour"
 
@@ -42,7 +43,7 @@ class TestTimedTaskCheck(unittest.TestCase):
         """Test check returns True for valid cron config."""
         config = {
             "task": TASK_NAME,
-            "timed": {TRIGGER_CRON: TRIGGER_CRON, DAY_OF_WEEK: "0-6", HOUR: "3"},
+            "timed": {TRIGGER: TRIGGER_CRON, DAY_OF_WEEK: "0-6", HOUR: "3"},
         }
         task = MockTimedTask(config)
         self.assertTrue(task.check())
@@ -51,7 +52,7 @@ class TestTimedTaskCheck(unittest.TestCase):
         """Test check returns True for valid interval config."""
         config = {
             "task": TASK_NAME,
-            "timed": {TRIGGER_INTERVAL: TRIGGER_INTERVAL, "minutes": 30},
+            "timed": {TRIGGER: TRIGGER_INTERVAL, "minutes": 30},
         }
         task = MockTimedTask(config)
         self.assertTrue(task.check())
@@ -60,7 +61,7 @@ class TestTimedTaskCheck(unittest.TestCase):
         """Test check returns False for invalid trigger."""
         config = {
             "task": TASK_NAME,
-            "timed": {TRIGGER_INVALID: TRIGGER_INVALID, DAY_OF_WEEK: "0-6", HOUR: "3"},
+            "timed": {TRIGGER: TRIGGER_INVALID, DAY_OF_WEEK: "0-6", HOUR: "3"},
         }
         task = MockTimedTask(config)
         self.assertFalse(task.check())
@@ -69,7 +70,7 @@ class TestTimedTaskCheck(unittest.TestCase):
         """Test check returns False when required fields missing."""
         config = {
             "task": TASK_NAME,
-            "timed": {TRIGGER_CRON: TRIGGER_CRON},
+            "timed": {TRIGGER: TRIGGER_CRON},
         }
         task = MockTimedTask(config)
         self.assertFalse(task.check())
@@ -122,8 +123,24 @@ class TestTimedTaskManagerInit(unittest.TestCase):
     @patch("vulcanus.timed.APScheduler")
     def test_init(self, mock_scheduler):
         """Test TimedTaskManager initializes correctly."""
-        manager = TimedTaskManager()
-        self.assertIsNotNone(manager.timed_scheduler)
+        yaml_content = (
+            f"- task: {TASK_NAME}\n"
+            f"  type: {TASK_TYPE}\n"
+            "  enable: true\n"
+            "  timed:\n"
+            f"    trigger: {TRIGGER_CRON}\n"
+            f"    {DAY_OF_WEEK}: 0-6\n"
+            f"    {HOUR}: 3\n"
+        )
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
+            f.write(yaml_content)
+            f.flush()
+            try:
+                manager = TimedTaskManager(config_path=f.name)
+                self.assertIsNotNone(manager.timed_scheduler)
+                self.assertIn(TASK_NAME, manager.timed_config)
+            finally:
+                os.unlink(f.name)
 
 
 if __name__ == "__main__":
