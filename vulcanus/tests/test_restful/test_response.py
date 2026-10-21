@@ -16,6 +16,8 @@ import json
 import unittest
 from unittest.mock import patch, MagicMock
 
+import marshmallow as ma
+
 from vulcanus.restful.response import BaseResponse
 from vulcanus.restful.resp import state
 
@@ -55,13 +57,25 @@ class TestBaseResponseGetResponse(unittest.TestCase):
         self.assertEqual(result.get("label"), state.PARAM_ERROR)
 
 
+class TestSchema(ma.Schema):
+    """Simple schema for verify_args tests."""
+
+    key = ma.fields.String(required=True)
+
+
 class TestBaseResponseVerifyArgs(unittest.TestCase):
     """Tests for BaseResponse.verify_args static method."""
 
-    def test_verify_args_empty_schema(self):
-        """Test verify_args with no schema returns SUCCEED."""
-        args, status = BaseResponse.verify_args(TEST_DATA, None)
+    def test_verify_args_success(self):
+        """Test verify_args with valid args returns SUCCEED."""
+        args, status = BaseResponse.verify_args({"key": "value"}, TestSchema)
         self.assertEqual(status, state.SUCCEED)
+        self.assertEqual(args, {"key": "value"})
+
+    def test_verify_args_param_error(self):
+        """Test verify_args with invalid args returns PARAM_ERROR."""
+        args, status = BaseResponse.verify_args({"other": "value"}, TestSchema)
+        self.assertEqual(status, state.PARAM_ERROR)
 
 
 class TestBaseResponseVerifyToken(unittest.TestCase):
