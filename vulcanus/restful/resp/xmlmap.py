@@ -28,9 +28,9 @@ class XmlParse:
 
     def __new__(cls, *args, **kwargs):
         with cls._lock:
-            if not hasattr(cls, "__instance"):
-                cls.__instance = object.__new__(cls)
-        return cls.__instance
+            if not hasattr(cls, "_instance"):
+                cls._instance = object.__new__(cls)
+        return cls._instance
 
     def __init__(self):
         self.xml = None
