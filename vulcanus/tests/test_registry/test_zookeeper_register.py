@@ -13,7 +13,6 @@
 Description: unit tests for registry/register_service/zookeeper.py
 """
 import json
-import os
 import unittest
 from unittest.mock import patch, MagicMock
 
@@ -73,7 +72,12 @@ class TestZookeeperRegisterCenterRegisterService(unittest.TestCase):
     def test_register_success(self, mock_kazoo):
         """Test register_service returns True on success."""
         mock_client = MagicMock()
-        mock_client.create.return_value = os.path.join("/services", SERVICE_NAME, NODE_ID)
+
+        # the generated node path contains a random uuid, return it as-is
+        def create_node(path, value, ephemeral):
+            return path
+
+        mock_client.create.side_effect = create_node
         mock_kazoo.return_value = mock_client
         center = ZookeeperRegisterCenter(HOSTS)
         result = center.register_service(SERVICE_NAME, SERVICE_INFO)
