@@ -17,7 +17,7 @@ setup(
         "xmltodict",
         "PyYAML",
         "marshmallow>=3.13.0",
-        "xlrd",
+        "xlrd<2.0",
         "requests",
         "SQLAlchemy",
         "elasticsearch>=7,<8",
