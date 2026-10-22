@@ -35,11 +35,12 @@ class TestXmlParse(unittest.TestCase):
         self.assertIsNone(parser.xml)
 
     def test_content_without_xml(self):
-        """Test content triggers load_xml when xml is None."""
+        """Test content reloads xml from the default map when xml is None."""
         parser = XmlParse()
         parser.clear_xml()
-        with self.assertRaises(ValueError):
-            parser.content(LABEL)
+        result = parser.content(LABEL)
+        self.assertIsNotNone(parser.xml)
+        self.assertEqual(result["status_code"], "200")
 
 
 class TestResponse(unittest.TestCase):
