@@ -15,6 +15,8 @@ Test BaseConsumer init (basically read config)
 """
 import os
 import unittest
+from unittest.mock import patch
+
 from vulcanus.conf import Config
 from vulcanus.kafka.producer import BaseProducer
 from vulcanus.kafka.kafka_exception import ProducerInitError
@@ -26,12 +28,16 @@ data_path = os.path.join(__here__, "../data/")
 
 class TestConsumerInit(unittest.TestCase):
     """
-    Test Consumer init with specific configuration
+    Test Producer init with specific configuration
     """
+
+    def read_config(self, config_path):
+        with patch("vulcanus.conf.Config._load_private_config"):
+            return Config(config_path)
 
     def test_miss_config(self):
         miss_config_path = os.path.join(data_path, "miss_key_producer_config.ini")
-        configuration = Config(miss_config_path)
+        configuration = self.read_config(miss_config_path)
         with self.assertRaises(ProducerInitError) as context:
             producer = BaseProducer(configuration)
             producer.close()
@@ -40,19 +46,15 @@ class TestConsumerInit(unittest.TestCase):
         )
 
     def test_none_configfile(self):
-        right_config_path = os.path.join(data_path, "none_config.ini")
-        configuration = Config(right_config_path)
-        with self.assertRaises(ProducerInitError) as context:
-            producer = BaseProducer(configuration)
-            producer.close()
-        self.assertTrue(
-            "Producer init failed with wrong config file." in str(context.exception)
-        )
+        none_config_path = os.path.join(data_path, "none_config.ini")
+        with self.assertRaises(RuntimeError):
+            self.read_config(none_config_path)
 
     def test_right_config(self):
         right_config_path = os.path.join(data_path, "right_producer_config.ini")
-        configuration = Config(right_config_path)
+        configuration = self.read_config(right_config_path)
 
         producer = BaseProducer(configuration)
         producer.bootstrap_connected()
         self.assertFalse(producer.bootstrap_connected())
+        producer.close()
