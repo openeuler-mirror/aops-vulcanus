@@ -38,8 +38,8 @@ class TestMysqlProxy(unittest.TestCase):
         try:
             connection = cls.engine.connect()
             connection.close()
-        except OperationalError:
-            raise unittest.SkipTest("MySQL service is not available")
+        except OperationalError as err:
+            raise unittest.SkipTest("MySQL service is not available") from err
 
     def setUp(self):
         self.mysql_proxy = MysqlProxy()
