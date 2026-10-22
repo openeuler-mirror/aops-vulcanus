@@ -16,6 +16,7 @@ Author:
 Description:
 """
 import unittest
+from sqlalchemy.exc import OperationalError
 from sqlalchemy.orm import sessionmaker
 from sqlalchemy.orm.scoping import scoped_session
 
@@ -25,20 +26,29 @@ from vulcanus.tests.test_database.for_mysql.models import Base, Test
 
 
 class TestMysqlProxy(unittest.TestCase):
-    def setUp(self):
+    @classmethod
+    def setUpClass(cls):
         mysql_host = "127.0.0.1"
         mysql_port = 3306
         mysql_url_format = "mysql+pymysql://@%s:%s/%s"
         mysql_database_name = "aops_test"
         engine_url = mysql_url_format % (mysql_host, mysql_port, mysql_database_name)
-        self.engine = create_database_engine(engine_url, 100, 7200)
-        session = scoped_session(sessionmaker(bind=self.engine))
+        cls.engine = create_database_engine(engine_url, 100, 7200)
+        MysqlProxy.engine = cls.engine
+        try:
+            connection = cls.engine.connect()
+            connection.close()
+        except OperationalError as err:
+            raise unittest.SkipTest("MySQL service is not available") from err
+
+    def setUp(self):
         self.mysql_proxy = MysqlProxy()
-        self.mysql_proxy.connect(session)
+        self.assertTrue(self.mysql_proxy.connect())
         Base.metadata.create_all(self.engine)
 
     def tearDown(self):
-        self.mysql_proxy.close()
+        if self.mysql_proxy.session:
+            self.mysql_proxy.session.close()
         Base.metadata.drop_all(self.engine)
 
     def test_operation(self):
