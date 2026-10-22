@@ -117,7 +117,7 @@ def timestr_unix(time_str):
     match = re.search(r"\.(\d+)", time_str)
     if match:
         fraction = match.group(1)[:6].ljust(6, "0")
-        time_str = time_str[: match.start(1)] + fraction + time_str[match.end(1) :]
+        time_str = time_str[:match.start(1)] + fraction + time_str[match.end(1):]
 
     time_format = time.strptime(time_str, time_format_with_hill)
     return int(time.mktime(time_format))
