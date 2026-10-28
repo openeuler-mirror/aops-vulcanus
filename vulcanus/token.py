@@ -50,7 +50,7 @@ def generate_token(unique_iden, minutes=20, **kwargs):
         token: (str) generated token value
     """
     if not unique_iden:
-        return ValueError("A unique identifier is missing")
+        raise ValueError("A unique identifier is missing")
     token_body = {"iat": int(time.time()), "exp": get_timedelta(20), "sub": unique_iden}
     if minutes and minutes != 20:
         token_body["exp"] = get_timedelta(minutes)

@@ -63,9 +63,9 @@ class TestGenerateToken(unittest.TestCase):
         self.assertIsInstance(token, str)
 
     def test_generate_token_empty_identifier(self):
-        """Test generate_token with empty identifier returns ValueError."""
-        result = generate_token("")
-        self.assertIsInstance(result, ValueError)
+        """Test generate_token with empty identifier raises ValueError."""
+        with self.assertRaises(ValueError):
+            generate_token("")
 
 
 class TestDecodeToken(unittest.TestCase):
