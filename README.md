@@ -1,7 +1,6 @@
 [English](./README_EN.md) | 简体中文
 
 # aops-vulcanus
-简体中文 | [English](./README_EN.md)
 
 #### 介绍
 A basic tool libraries of aops, including logging, configure and response, etc.
