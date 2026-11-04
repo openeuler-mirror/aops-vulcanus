@@ -12,10 +12,6 @@
     <status_code>500</status_code>
     <message_en>internal server error</message_en>
 </code>
-<code label="Server.Error">
-    <status_code>500</status_code>
-    <message_en>internal server error</message_en>
-</code>
 <code label="Permission.Error">
     <status_code>401</status_code>
     <message_en>permission error</message_en>
@@ -172,6 +168,10 @@
     <status_code>1605</status_code>
     <message_en>Bind the same user repeatedly</message_en>
 </code>
+<code label="Get.Userinfo.Failed">
+    <status_code>1606</status_code>
+    <message_en>get user information failed</message_en>
+</code>
 <code label="Ssh.Connection.Error">
     <status_code>1701</status_code>
     <message_en>Connection failed, invalid ip address or port</message_en>
@@ -212,7 +212,7 @@
     <status_code>2005</status_code>
     <message_en>target cluster nonsupport be deleted, please wait for synchronize finished</message_en>
 </code>
-<code label="SynchronizeTask.Failed">
+<code label="Redis.SynchronizeTask.Failed">
     <status_code>2101</status_code>
     <message_en>Synchronize task failed</message_en>
 </code>
