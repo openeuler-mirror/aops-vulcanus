@@ -43,7 +43,7 @@ PRIVATE_INDIVIDUATION_CONFIG = os.path.join(BASE_CONFIG_PATH, ".aops-private-con
 
 # The root node of the zookeeper configuration center
 CONFIG_ROOT_PATH = "/config"
-SERVICE_CUSTOM_CONFIG_PATH = os.path.join(CONFIG_ROOT_PATH, "/services")
+SERVICE_CUSTOM_CONFIG_PATH = os.path.join(CONFIG_ROOT_PATH, "services")
 REFRESH_TOKEN_EXP = 1440
 TIMEOUT = 900
 
