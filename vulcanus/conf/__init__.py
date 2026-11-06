@@ -19,6 +19,7 @@ import configparser
 import inspect
 import logging
 import os
+import stat
 from functools import partial
 
 import yaml
@@ -53,25 +54,67 @@ class Config:
         self.read_config(config_file)
 
     def _load_conf(self, config_file):
-        if not os.path.exists(config_file):
-            raise RuntimeError(f"Configuration file does not exist: {config_file}")
+        if not os.path.isfile(config_file):
+            raise RuntimeError(
+                f"Configuration file does not exist or is not a regular file: {config_file}"
+            )
 
         conf = configparser.RawConfigParser()
         try:
-            conf.read(config_file)
-        except configparser.ParsingError:
+            read_files = conf.read(config_file)
+        except (configparser.Error, UnicodeError):
             raise RuntimeError(f"Failed to load the configuration file: {config_file}")
+
+        if not read_files:
+            raise RuntimeError(f"Failed to read the configuration file: {config_file}")
 
         return conf
 
-    def _load_private_config(self, config_file=PRIVATE_INDIVIDUATION_CONFIG):
+    def _load_private_config(self, config_file=None):
         """
         Load user-private personalization settings
 
         Args:
-            config_file: private config file
+            config_file: private config file, optional
         """
-        conf = self._load_conf(config_file)
+        logger = logging.getLogger(__name__)
+        if config_file is None:
+            config_file = PRIVATE_INDIVIDUATION_CONFIG
+        if not config_file:
+            return
+
+        try:
+            config_stat = os.stat(config_file)
+        except FileNotFoundError:
+            if os.path.lexists(config_file):
+                logger.warning(
+                    "Private configuration path is a dangling symbolic link, skipping: %s",
+                    config_file,
+                )
+            else:
+                logger.debug("Private configuration file not found, skipping: %s", config_file)
+            return
+        except OSError as error:
+            logger.warning(
+                "Private configuration file is not accessible, skipping: %s: %s",
+                config_file,
+                error,
+            )
+            return
+
+        if not stat.S_ISREG(config_stat.st_mode):
+            logger.warning(
+                "Private configuration path is not a regular file, skipping: %s", config_file
+            )
+            return
+
+        try:
+            conf = self._load_conf(config_file)
+        except (RuntimeError, UnicodeError, configparser.Error) as error:
+            logger.warning(
+                "Failed to load private configuration file, skipping: %s", error
+            )
+            return
 
         for section in conf.sections():
             self._set_section_value(conf, section)
@@ -287,13 +330,13 @@ class ConfigHandle:
         except KazooException as e:
             raise RuntimeError(f"Failed to add listener for watching node {watch_node}") from e
 
-    def _watch_node_changes(self, data, stat, save_path):
+    def _watch_node_changes(self, data, znode_stat, save_path):
         """
         Callback function to save configuration data to local file when Zookeeper node changes.
 
         Args:
             data: Configuration data received from Zookeeper node.
-            stat: Node status.
+            znode_stat: Node status.
             save_path (str): Path to save the configuration data.
         """
         if not data:
