@@ -23,6 +23,29 @@ from concurrent_log_handler import ConcurrentRotatingFileHandler
 from vulcanus.conf import configuration
 
 
+LOG_DIR_MODE = 0o750
+PRESERVED_DIR_MODE_BITS = stat.S_ISUID | stat.S_ISGID | stat.S_ISVTX
+
+
+def _prepare_log_dir(log_dir):
+    """
+    Create the log directory or normalize its permissions.
+
+    Args:
+        log_dir (str): log directory path
+    """
+    os.makedirs(log_dir, mode=LOG_DIR_MODE, exist_ok=True)
+    try:
+        current_mode = stat.S_IMODE(os.stat(log_dir).st_mode)
+        desired_mode = LOG_DIR_MODE | (current_mode & PRESERVED_DIR_MODE_BITS)
+        if current_mode != desired_mode:
+            os.chmod(log_dir, desired_mode)
+    except OSError as error:
+        logging.getLogger(__name__).warning(
+            "Failed to set permissions on log directory %s: %s", log_dir, error
+        )
+
+
 class Logger:
     """
     Logger class.
@@ -33,8 +56,7 @@ class Logger:
         Class instance initialization.
         """
         log_dir = configuration.log.log_dir
-        if not os.path.exists(log_dir):
-            os.makedirs(log_dir, mode=0o644)
+        _prepare_log_dir(log_dir)
 
         self.__log_name = os.path.join(log_dir, "aops.log")
         self.__log_level = configuration.log.log_level
@@ -107,7 +129,7 @@ class Logger:
             maxBytes=self.__max_bytes,
             backupCount=self.__backup_count,
             encoding="utf-8",
-            chmod=(stat.S_IRUSR | stat.S_IWUSR),
+            chmod=(stat.S_IRUSR | stat.S_IWUSR | stat.S_IRGRP),
         )
         rotate_handler.setFormatter(self.__log_format)
 
