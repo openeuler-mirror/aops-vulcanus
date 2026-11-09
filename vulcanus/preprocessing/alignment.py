@@ -109,6 +109,9 @@ def align_certain_data(time_series, column):
     Returns:
         list: aligned data
     """
+    if not column:
+        return []
+
     column_time = [item[0] for item in column]
     column_len = len(column)
     column_res = []
@@ -139,10 +142,11 @@ def align(period, time_range, data):
         dict: aligned data
     """
     result = {}
-    primary = get_primary_data(data)
-    if len(data[primary]) == 0:
+    non_empty = {key: column for key, column in data.items() if column}
+    if not non_empty:
         return result
 
+    primary = get_primary_data(non_empty)
     time_series = make_time_series(period, time_range, data[primary])
 
     for key, column in data.items():

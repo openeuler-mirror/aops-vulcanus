@@ -63,6 +63,9 @@ class TestAlign(unittest.TestCase):
         column_res = align_certain_data(time_series, column)
         self.assertEqual(expected_res, column_res)
 
+    def test_align_certain_data_with_empty_column(self):
+        self.assertEqual(align_certain_data([1, 5, 9], []), [])
+
     def test_align(self):
         period = 5
         time_range = [1, 12]
@@ -70,3 +73,7 @@ class TestAlign(unittest.TestCase):
         res = align(period, time_range, data)
         expected_res = {"key1": [[1, 3], [6, 1], [11, 2]]}
         self.assertEqual(res, expected_res)
+
+    def test_align_with_no_non_empty_series_returns_empty(self):
+        self.assertEqual(align(5, [1, 12], {}), {})
+        self.assertEqual(align(5, [1, 12], {"key1": [], "key2": []}), {})
