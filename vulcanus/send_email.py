@@ -53,10 +53,9 @@ class Email:
         """
         try:
             if smtp_ssl:
-                server = smtplib.SMTP_SSL(host=self.server, timeout=timeout)
+                server = smtplib.SMTP_SSL(host=self.server, port=self.port, timeout=timeout)
             else:
-                server = smtplib.SMTP(host=self.server, timeout=timeout)
-            server.connect(self.server, self.port)
+                server = smtplib.SMTP(host=self.server, port=self.port, timeout=timeout)
             server.login(self.sender, self.authorization_code)
             server.sendmail(self.sender, receivers, message.as_string())
             server.quit()
