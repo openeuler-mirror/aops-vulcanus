@@ -64,13 +64,16 @@ class Config:
 
         return conf
 
-    def _load_private_config(self, config_file=PRIVATE_INDIVIDUATION_CONFIG):
+    def _load_private_config(self, config_file=None):
         """
         Load user-private personalization settings
 
         Args:
-            config_file: private config file
+            config_file: private config file, optional
         """
+        config_file = config_file or PRIVATE_INDIVIDUATION_CONFIG
+        if not os.path.exists(config_file):
+            return
         conf = self._load_conf(config_file)
 
         for section in conf.sections():
