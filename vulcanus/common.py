@@ -38,14 +38,12 @@ def singleton(cls):
 
     @wraps(cls)
     def __single(*args, **kwargs):
-        __key = [cls.__name__]
-        __sig = inspect.signature(cls.__init__)
-
-        for key, value in __sig.parameters.items():
-            if key in kwargs:
-                __key.append(kwargs[key])
-            else:
-                __key.append(value.default)
+        __sig = inspect.signature(cls)
+        __bound_args = __sig.bind(*args, **kwargs)
+        __bound_args.apply_defaults()
+        __key = [cls.__name__] + [
+            f"{name}={value!r}" for name, value in sorted(__bound_args.arguments.items())
+        ]
         __instance_key = str(__key)
 
         if __instance_key not in __instance:
