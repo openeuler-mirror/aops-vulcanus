@@ -109,6 +109,9 @@ def align_certain_data(time_series, column):
     Returns:
         list: aligned data
     """
+    if not column:
+        return []
+
     column_time = [item[0] for item in column]
     column_len = len(column)
     column_res = []
