@@ -1,6 +1,6 @@
 Name:		aops-vulcanus
 Version:	v2.1.0
-Release:	1
+Release:	2
 Summary:	A basic tool libraries of aops, including logging, configure and response, etc.
 License:	MulanPSL2
 URL:		https://gitee.com/openeuler/%{name}
@@ -48,7 +48,7 @@ cp -r scripts %{buildroot}/opt/aops/
 
 %files
 %doc README.*
-%attr(0644,root,root) %{_sysconfdir}/aops/aops-config.yml
+%config(noreplace) %attr(0644,root,root) %{_sysconfdir}/aops/aops-config.yml
 %{python3_sitelib}/aops_vulcanus*.egg-info
 %{python3_sitelib}/vulcanus/*
 
@@ -58,6 +58,9 @@ cp -r scripts %{buildroot}/opt/aops/
 
 
 %changelog
+* Mon Nov 09 2026 htpeng <htpengc@isoftstone.com> - v2.1.0-2
+- preserve local /etc/aops/aops-config.yml on rpm upgrade
+
 * Tue May 28 2024 gongzhengtang<gong_zhengtang@163.com> - v2.0.0-1
 - support signature verification
 - unified management and control of the configuration center
