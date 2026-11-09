@@ -25,6 +25,31 @@ import yaml
 from vulcanus.log.log import LOGGER
 
 
+def _make_singleton_key(value):
+    """
+    Build a stable key fragment for a constructor argument.
+
+    Args:
+        value: constructor argument value
+
+    Returns:
+        str: normalized key fragment
+    """
+    if isinstance(value, dict):
+        items = sorted(
+            f"{_make_singleton_key(key)}={_make_singleton_key(item)}"
+            for key, item in value.items()
+        )
+        return "dict{" + ",".join(items) + "}"
+    if isinstance(value, (set, frozenset)):
+        items = sorted(_make_singleton_key(item) for item in value)
+        return f"{type(value).__name__}{{" + ",".join(items) + "}"
+    if isinstance(value, (list, tuple)):
+        items = ",".join(_make_singleton_key(item) for item in value)
+        return f"{type(value).__name__}[{items}]"
+    return f"{type(value).__name__}:{value!r}"
+
+
 def singleton(cls):
     """
     Singleton pattern decorator
@@ -35,17 +60,16 @@ def singleton(cls):
     Returns: class instance
     """
     __instance = {}
+    __sig = inspect.signature(cls)
 
     @wraps(cls)
     def __single(*args, **kwargs):
-        __key = [cls.__name__]
-        __sig = inspect.signature(cls.__init__)
-
-        for key, value in __sig.parameters.items():
-            if key in kwargs:
-                __key.append(kwargs[key])
-            else:
-                __key.append(value.default)
+        __bound_args = __sig.bind(*args, **kwargs)
+        __bound_args.apply_defaults()
+        __key = [cls.__name__] + [
+            f"{name}={_make_singleton_key(value)}"
+            for name, value in sorted(__bound_args.arguments.items())
+        ]
         __instance_key = str(__key)
 
         if __instance_key not in __instance:
