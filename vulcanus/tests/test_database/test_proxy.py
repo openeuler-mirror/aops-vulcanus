@@ -146,7 +146,7 @@ class TestMysqlProxy(unittest.TestCase):
     def test_exit_with_attribute_error(self):
         error = AttributeError("error")
         with self.assertRaises(SQLAlchemyError):
-            self.mysql_proxy.__exit__(error, error, None)
+            self.mysql_proxy.__exit__(AttributeError, error, None)
 
     def test_insert_success(self):
         result = self.mysql_proxy.insert(dict, {"a": 1})

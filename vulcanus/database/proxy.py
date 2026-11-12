@@ -147,11 +147,12 @@ class MysqlProxy(DataBaseProxy):
             exc_tb: Abnormal table
 
         """
-        if isinstance(exc_type, (AttributeError)):
-            raise SQLAlchemyError(exc_val)
-
-        if self.session:
-            self.session.close()
+        try:
+            if exc_type and issubclass(exc_type, AttributeError):
+                raise SQLAlchemyError(exc_val) from exc_val
+        finally:
+            if self.session:
+                self.session.close()
 
     def insert(self, table, data):
         """
