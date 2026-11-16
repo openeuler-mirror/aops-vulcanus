@@ -32,13 +32,13 @@ def deduplicate_certain_data(data_list):
     if not data_list:
         return data_list
     ret_data_list = []
-    cur_data_item = data_list[0]
+    cur_data_item = list(data_list[0])
     for i in range(1, len(data_list)):
         if data_list[i][0] == cur_data_item[0]:
             cur_data_item[1] = "{} {}".format(cur_data_item[1], data_list[i][1])
         else:
             ret_data_list.append(cur_data_item)
-            cur_data_item = data_list[i]
+            cur_data_item = list(data_list[i])
     ret_data_list.append(cur_data_item)
     return ret_data_list
 
