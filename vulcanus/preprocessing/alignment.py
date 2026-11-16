@@ -47,6 +47,12 @@ def make_time_series(period, time_range, data):
     Returns:
         list: time series
     """
+    if period <= 0:
+        raise ValueError("Sampling period must be greater than 0")
+
+    if not data:
+        return []
+
     cur_time = data[0][0]
     time_series = []
 
