@@ -34,6 +34,10 @@ class TestAlign(unittest.TestCase):
         expected_res = [2, 7, 12]
         self.assertEqual(time_series, expected_res)
 
+    def test_make_time_series_with_non_positive_period(self):
+        with self.assertRaises(ValueError):
+            make_time_series(0, [1, 10], [[1, 5]])
+
     def test_handle_right_boundary(self):
         time_index = 3
         time_series = [1, 6, 11, 16, 21]
