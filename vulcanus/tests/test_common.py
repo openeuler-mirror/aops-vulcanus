@@ -17,7 +17,7 @@ import os
 import tempfile
 import unittest
 
-from vulcanus.common import ValidateUtils, TimeUtils, ConfigFileParse, hash_value
+from vulcanus.common import ValidateUtils, TimeUtils, ConfigFileParse, hash_value, singleton
 
 TEST_PATH = "/tmp/test_common_file"
 TEST_TIME = "20240115-10:30:00"
@@ -153,6 +153,24 @@ class TestHashValue(unittest.TestCase):
         h1 = hash_value(HASH_INPUT)
         h2 = hash_value(HASH_INPUT)
         self.assertEqual(h1, h2)
+
+
+class TestSingleton(unittest.TestCase):
+    """Tests for singleton decorator."""
+
+    def test_positional_arguments_create_distinct_instances(self):
+        """Test singleton keys include positional constructor arguments."""
+
+        @singleton
+        class Dummy:
+            def __init__(self, value=None):
+                self.value = value
+
+        first = Dummy("first")
+        second = Dummy("second")
+
+        self.assertIsNot(first, second)
+        self.assertIs(Dummy("first"), first)
 
 
 if __name__ == "__main__":
