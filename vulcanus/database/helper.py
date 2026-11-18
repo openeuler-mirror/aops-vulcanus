@@ -19,6 +19,7 @@ import time
 import math
 import re
 from sqlalchemy import create_engine
+from sqlalchemy.engine import URL
 from sqlalchemy.sql.expression import desc, asc
 
 from vulcanus.restful.resp.state import PARTIAL_SUCCEED, SUCCEED
@@ -32,19 +33,21 @@ def make_mysql_engine_url(configuration):
         configuration (Config): configuration object of certain module
 
     Returns:
-        str: url of engine
+        URL: url of engine
     """
     mysql_host = configuration.mysql.host
     mysql_port = configuration.mysql.port
     username = configuration.mysql.username
     password = configuration.mysql.password
     mysql_database_name = configuration.mysql.database
-    if username and password:
-        url = f"mysql+pymysql://{username}:{password}@{mysql_host}:{mysql_port}/{mysql_database_name}"
-    else:
-        url = f"mysql+pymysql://@{mysql_host}:{mysql_port}/{mysql_database_name}"
-
-    return url
+    return URL.create(
+        "mysql+pymysql",
+        username=str(username) if username else None,
+        password=str(password) if password else None,
+        host=str(mysql_host),
+        port=int(mysql_port) if mysql_port else None,
+        database=str(mysql_database_name),
+    )
 
 
 def create_database_engine(url, pool_size, pool_recycle):
@@ -52,7 +55,7 @@ def create_database_engine(url, pool_size, pool_recycle):
     Create database connection pool
 
     Args:
-        url(str): engine url
+        url(str or URL): engine url, a plain string or a sqlalchemy URL object
         pool_size(int): size of pool
         pool_recycle(int): time that pool recycle the connection
 
