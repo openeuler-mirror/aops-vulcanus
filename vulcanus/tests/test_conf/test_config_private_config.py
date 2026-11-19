@@ -40,6 +40,28 @@ class TestConfigPrivateFile(unittest.TestCase):
         finally:
             os.remove(config_path)
 
+    def test_empty_private_config_path_disables_loading(self):
+        file_descriptor, config_path = tempfile.mkstemp(suffix=".ini")
+        original_stat = os.stat
+        try:
+            with os.fdopen(file_descriptor, "w", encoding="utf-8") as config_file:
+                config_file.write("[test]\nkey=1\n")
+
+            def reject_empty_path(path, *args, **kwargs):
+                if path == "":
+                    raise AssertionError("empty private config path must be ignored")
+                return original_stat(path, *args, **kwargs)
+
+            # An empty private config path must be rejected before any file access.
+            with mock.patch("vulcanus.conf.PRIVATE_INDIVIDUATION_CONFIG", ""):
+                with mock.patch("os.stat", side_effect=reject_empty_path):
+                    config = Config(config_path)
+
+            self.assertEqual(config.test["KEY"], 1)
+            self.assertFalse(hasattr(config, "private"))
+        finally:
+            os.remove(config_path)
+
 
 if __name__ == "__main__":
     unittest.main()
