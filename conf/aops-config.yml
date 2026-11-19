@@ -21,6 +21,8 @@ infrastructure:
     host: "127.0.0.1"
     port: 2181
   individuation:
+    # Sample/test placeholder values only (not valid keys).
+    # Replace or configure them according to your actual deployment environment.
     gitee_client_id: 7420ebbb10f7f196de479bd3fe30f120691321143fdae882bc8b3320b3dbb71c
     gitee_client_secret: c6466348389db3a2da3a86ec3b544c19c15f50de513da4dc3edbadaa2e5df792
     redirect_url: http://127.0.0.1:8000/user/account
