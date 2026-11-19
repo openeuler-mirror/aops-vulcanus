@@ -43,6 +43,14 @@ class TestDeduplicate(unittest.TestCase):
         ]
         self.assertListEqual(ret, expect_ret)
 
+    def test_deduplicate_certain_data_does_not_modify_input(self):
+        data_list = [[1111, "ttttt"], [1111, "qqqq"], [1112, "bbbb"]]
+        ret = deduplicate_certain_data(data_list)
+        self.assertListEqual(data_list, [[1111, "ttttt"], [1111, "qqqq"], [1112, "bbbb"]])
+        self.assertListEqual(ret, [[1111, "ttttt qqqq"], [1112, "bbbb"]])
+        for row_ret, row_src in zip(ret, data_list):
+            self.assertIsNot(row_ret, row_src)
+
     def test_deduplicate(self):
         data_vector = {}
         self.assertDictEqual(deduplicate(data_vector), {})
