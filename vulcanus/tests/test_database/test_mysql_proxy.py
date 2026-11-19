@@ -1,0 +1,33 @@
+#!/usr/bin/python3
+# ******************************************************************************
+# Copyright (c) Huawei Technologies Co., Ltd. 2024-2024. All rights reserved.
+# licensed under the Mulan PSL v2.
+# You can use this software according to the terms and conditions of the Mulan PSL v2.
+# You may obtain a copy of Mulan PSL v2 at:
+#     http://license.coscl.org.cn/MulanPSL2
+# THIS SOFTWARE IS PROVIDED ON AN "AS IS" BASIS, WITHOUT WARRANTIES OF ANY KIND, EITHER EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO NON-INFRINGEMENT, MERCHANTABILITY OR FIT FOR A PARTICULAR
+# PURPOSE.
+# See the Mulan PSL v2 for more details.
+# ******************************************************************************/
+import unittest
+
+from sqlalchemy.exc import SQLAlchemyError
+
+from vulcanus.database.proxy import MysqlProxy
+
+
+class TestMysqlProxyExit(unittest.TestCase):
+    def test_attribute_error_is_converted_to_sqlalchemy_error(self):
+        MysqlProxy.engine = object()
+        proxy = MysqlProxy()
+        try:
+            with self.assertRaises(SQLAlchemyError):
+                proxy.__exit__(AttributeError, AttributeError("missing attribute"), None)
+        finally:
+            proxy.session = None
+            MysqlProxy.engine = None
+
+
+if __name__ == "__main__":
+    unittest.main()
