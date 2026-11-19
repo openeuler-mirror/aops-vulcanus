@@ -16,6 +16,8 @@ import time
 import unittest
 from unittest.mock import MagicMock
 
+from sqlalchemy.engine import URL
+
 from vulcanus.database.helper import (
     make_mysql_engine_url,
     timestamp_datetime,
@@ -46,9 +48,11 @@ class TestMakeMysqlEngineUrl(unittest.TestCase):
         config.mysql.password = TEST_PASS
         config.mysql.database = TEST_DB
         url = make_mysql_engine_url(config)
-        self.assertIn(TEST_USER, url)
-        self.assertIn(TEST_HOST, url)
-        self.assertIn(TEST_DB, url)
+        self.assertEqual(url.username, TEST_USER)
+        self.assertEqual(url.password, TEST_PASS)
+        self.assertEqual(url.host, TEST_HOST)
+        self.assertEqual(url.port, int(TEST_PORT))
+        self.assertEqual(url.database, TEST_DB)
 
     def test_without_credentials(self):
         """Test make_mysql_engine_url without username/password."""
@@ -59,8 +63,29 @@ class TestMakeMysqlEngineUrl(unittest.TestCase):
         config.mysql.password = ""
         config.mysql.database = TEST_DB
         url = make_mysql_engine_url(config)
-        self.assertNotIn(TEST_USER, url)
-        self.assertIn(TEST_HOST, url)
+        self.assertIsNone(url.username)
+        self.assertIsNone(url.password)
+        self.assertEqual(url.host, TEST_HOST)
+        self.assertEqual(url.port, int(TEST_PORT))
+        self.assertEqual(url.database, TEST_DB)
+
+    def test_special_characters_are_preserved_in_url_components(self):
+        """Test special characters in credentials are kept in the url components."""
+        config = MagicMock()
+        config.mysql.host = TEST_HOST
+        config.mysql.port = TEST_PORT
+        config.mysql.username = "aops user"
+        config.mysql.password = "p@ss/word"
+        config.mysql.database = TEST_DB
+
+        url = make_mysql_engine_url(config)
+
+        self.assertIsInstance(url, URL)
+        self.assertEqual(url.username, "aops user")
+        self.assertEqual(url.password, "p@ss/word")
+        self.assertEqual(url.host, TEST_HOST)
+        self.assertEqual(url.port, int(TEST_PORT))
+        self.assertEqual(url.database, TEST_DB)
 
 
 class TestTimestampDatetime(unittest.TestCase):
